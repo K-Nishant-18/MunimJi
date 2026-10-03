@@ -1,0 +1,27 @@
+# Maven
+backend/target/
+*.class
+*.jar
+!maven-wrapper.jar
+
+# Node
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.DS_Store
+
+# Env / secrets
+.env
+*.env.local
+
+# Logs
+*.log
+logs/
