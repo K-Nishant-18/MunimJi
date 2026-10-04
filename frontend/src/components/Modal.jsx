@@ -1,11 +1,13 @@
 import { X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 export default function Modal({ open, title, onClose, children, wide = false }) {
   if (!open) {
     return null;
   }
 
-  return (
+  // Portal to <body> so no transformed/animated ancestor can clip the overlay
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink-950/50 p-4 backdrop-blur-sm"
       onClick={onClose}
@@ -28,6 +30,7 @@ export default function Modal({ open, title, onClose, children, wide = false }) 
         </div>
         <div className="px-6 py-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

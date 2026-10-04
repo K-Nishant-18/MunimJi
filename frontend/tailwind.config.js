@@ -53,11 +53,13 @@ export default {
       keyframes: {
         fadeUp: {
           "0%": { opacity: "0", transform: "translateY(8px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+          // End at `none`, not translateY(0): with fill-mode both a lingering
+          // transform would trap position:fixed modals inside this element.
+          "100%": { opacity: "1", transform: "none" },
         },
         popIn: {
           "0%": { opacity: "0", transform: "translateY(12px) scale(0.98)" },
-          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+          "100%": { opacity: "1", transform: "none" },
         },
         float: {
           "0%, 100%": { transform: "translateY(0)" },
