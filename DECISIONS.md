@@ -46,10 +46,11 @@ Simple, beginner-friendly choices made where the brief was ambiguous.
     any purchase or invoice (invoice items keep a snapshot but still reference
     the product row). Category deletion blocked while products use it.
 
-12. **Seeding**: `data.sql` with `INSERT IGNORE` (idempotent) runs after schema
-    creation (`spring.jpa.defer-datasource-initialization=true`). Tests turn
-    seeding off (`spring.sql.init.mode=never`) and build their own data with
-    repositories.
+12. **Seeding**: `data.sql` using portable `INSERT ... SELECT ... WHERE NOT
+    EXISTS` (idempotent on both H2 and MySQL) runs after schema creation
+    (`spring.jpa.defer-datasource-initialization=true`). Tests run with a
+    `test` profile on in-memory H2 with the same seed and roll every test
+    back with `@Transactional`, so the dev database is never touched.
 
 13. **JWT**: jjwt 0.11.5, HS256, secret from `app.jwt.secret`
     (env `JWT_SECRET` fallback in application.properties). 24-hour expiry.
