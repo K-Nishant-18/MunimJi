@@ -19,8 +19,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     + "OR p.barcode LIKE CONCAT('%', :search, '%')")
     Page<Product> search(@Param("search") String search, Pageable pageable);
 
-    // Loads every product together with its batches in one query (stock page)
-    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.batches")
+    // Loads every product with its batches and category in one query (stock page)
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.batches LEFT JOIN FETCH p.category")
     java.util.List<Product> findAllWithBatches();
 
     boolean existsByCategoryId(Long categoryId);
