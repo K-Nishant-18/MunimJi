@@ -17,5 +17,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @Query("SELECT i FROM Invoice i JOIN FETCH i.items WHERE i.id = :id")
     Optional<Invoice> findByIdWithItems(Long id);
 
+    // List page: returns DTOs directly and counts items with a subquery,
+    // so paging never loads the item collection (no N+1)
+    @Query("SELECT new com.munimji.dto.invoice.InvoiceSummaryResponse("
+            + "i.id, i.invoiceNumber, i.invoiceDate, i.customerName, SIZE(i.items), i.grandTotal) "
+            + "FROM Invoice i")
+    org.springframework.data.domain.Page<com.munimji.dto.invoice.InvoiceSummaryResponse>
+            findAllSummaries(org.springframework.data.domain.Pageable pageable);
+
     List<Invoice> findByInvoiceDateBetweenOrderByInvoiceDateAsc(LocalDateTime start, LocalDateTime end);
 }
