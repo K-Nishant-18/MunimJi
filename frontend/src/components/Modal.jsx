@@ -1,3 +1,5 @@
+import { X } from "lucide-react";
+
 export default function Modal({ open, title, onClose, children, wide = false }) {
   if (!open) {
     return null;
@@ -5,25 +7,26 @@ export default function Modal({ open, title, onClose, children, wide = false }) 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink-950/50 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className={`mt-10 w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-lg bg-white shadow-xl`}
+        className={`mt-10 w-full ${wide ? "max-w-3xl" : "max-w-lg"} animate-popIn overflow-hidden
+           rounded-2xl bg-white shadow-lift`}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-          <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+        <div className="flex items-center justify-between border-b border-ink-900/[0.07] bg-ink-900/[0.02] px-6 py-4">
+          <h3 className="text-base font-extrabold tracking-tight text-ink-900">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-lg p-1.5 text-ink-500 transition hover:bg-ink-900/[0.06] hover:text-ink-900"
             aria-label="Close"
           >
-            X
+            <X size={18} strokeWidth={2.4} />
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className="px-6 py-5">{children}</div>
       </div>
     </div>
   );

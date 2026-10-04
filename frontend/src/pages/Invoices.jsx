@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Download, Eye, Receipt } from "lucide-react";
 import api, { errorMessage, formatMoney } from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import Modal from "../components/Modal.jsx";
@@ -52,7 +53,9 @@ export default function Invoices() {
     api
       .get(`/invoices/${invoice.id}/pdf`, { responseType: "blob" })
       .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        const url = window.URL.createObjectURL(
+          new Blob([response.data], { type: "application/pdf" })
+        );
         const link = document.createElement("a");
         link.href = url;
         link.download = `${invoice.invoiceNumber}.pdf`;
@@ -66,58 +69,62 @@ export default function Invoices() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-slate-800">Invoices</h1>
-
-      {error && (
-        <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert-error">{error}</div>}
 
       {loading ? (
         <Loader label="Loading invoices..." />
       ) : invoices.length === 0 ? (
-        <div className="rounded border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-400">
-          No invoices yet. Create one from the Billing page.
+        <div className="empty-state">
+          <Receipt size={26} className="text-ink-500" />
+          <p className="text-sm font-bold text-ink-700">No invoices yet.</p>
+          <p className="text-xs font-medium text-ink-500">
+            Create one from the Billing counter.
+          </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="card overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="table-head">
               <tr>
-                <th className="px-4 py-3">Invoice No</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Customer</th>
-                <th className="px-4 py-3">Items</th>
-                <th className="px-4 py-3">Grand Total</th>
-                <th className="px-4 py-3">Actions</th>
+                <th className="table-cell">Invoice No</th>
+                <th className="table-cell">Date</th>
+                <th className="table-cell">Customer</th>
+                <th className="table-cell">Items</th>
+                <th className="table-cell text-right">Grand Total</th>
+                <th className="table-cell text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {invoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-700">{invoice.invoiceNumber}</td>
-                  <td className="px-4 py-3 text-slate-500">
+                <tr key={invoice.id} className="table-row">
+                  <td className="table-cell">
+                    <span className="badge-neutral font-mono">{invoice.invoiceNumber}</span>
+                  </td>
+                  <td className="table-cell text-ink-500">
                     {new Date(invoice.invoiceDate).toLocaleString("en-IN")}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{invoice.customerName || "Walk-in"}</td>
-                  <td className="px-4 py-3 text-slate-500">{invoice.itemCount}</td>
-                  <td className="px-4 py-3 text-slate-700">₹ {formatMoney(invoice.grandTotal)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-3">
+                  <td className="table-cell font-bold text-ink-900">
+                    {invoice.customerName || "Walk-in"}
+                  </td>
+                  <td className="table-cell text-ink-500">{invoice.itemCount}</td>
+                  <td className="table-cell money text-right font-extrabold text-ink-900">
+                    ₹ {formatMoney(invoice.grandTotal)}
+                  </td>
+                  <td className="table-cell">
+                    <div className="flex justify-end gap-1">
                       <button
                         type="button"
                         onClick={() => openDetail(invoice)}
-                        className="text-indigo-600 hover:underline"
+                        className="btn-ghost px-3 py-1.5 text-xs"
                       >
-                        View
+                        <Eye size={14} /> View
                       </button>
                       <button
                         type="button"
                         onClick={() => downloadPdf(invoice)}
-                        className="text-emerald-600 hover:underline"
+                        className="btn-primary px-3 py-1.5 text-xs"
                       >
-                        PDF
+                        <Download size={14} /> PDF
                       </button>
                     </div>
                   </td>
@@ -134,51 +141,67 @@ export default function Invoices() {
         {detailLoading ? (
           <Loader label="Loading invoice..." />
         ) : detailError ? (
-          <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {detailError}
-          </div>
+          <div className="alert-error">{detailError}</div>
         ) : detail ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-slate-400">Invoice No</p>
-                <p className="font-semibold text-slate-700">{detail.invoiceNumber}</p>
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="rounded-xl bg-ink-900/[0.03] p-3">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                  Invoice No
+                </p>
+                <p className="mt-0.5 font-mono text-base font-extrabold text-ink-900">
+                  {detail.invoiceNumber}
+                </p>
               </div>
-              <div>
-                <p className="text-slate-400">Date</p>
-                <p className="text-slate-700">{new Date(detail.invoiceDate).toLocaleString("en-IN")}</p>
+              <div className="rounded-xl bg-ink-900/[0.03] p-3">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                  Date
+                </p>
+                <p className="mt-0.5 font-semibold text-ink-900">
+                  {new Date(detail.invoiceDate).toLocaleString("en-IN")}
+                </p>
               </div>
-              <div>
-                <p className="text-slate-400">Customer</p>
-                <p className="text-slate-700">{detail.customerName || "Walk-in"}</p>
+              <div className="rounded-xl bg-ink-900/[0.03] p-3">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                  Customer
+                </p>
+                <p className="mt-0.5 font-semibold text-ink-900">
+                  {detail.customerName || "Walk-in"}
+                </p>
               </div>
-              <div>
-                <p className="text-slate-400">Phone</p>
-                <p className="text-slate-700">{detail.customerPhone || "-"}</p>
+              <div className="rounded-xl bg-ink-900/[0.03] p-3">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                  Phone
+                </p>
+                <p className="mt-0.5 font-semibold text-ink-900">{detail.customerPhone || "—"}</p>
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded border border-slate-200">
+            <div className="overflow-x-auto rounded-xl border border-ink-900/[0.07]">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="table-head">
                   <tr>
-                    <th className="px-3 py-2">Item</th>
-                    <th className="px-3 py-2">HSN</th>
-                    <th className="px-3 py-2">Qty</th>
-                    <th className="px-3 py-2">Rate</th>
-                    <th className="px-3 py-2">GST %</th>
-                    <th className="px-3 py-2 text-right">Amount</th>
+                    <th className="table-cell">Item</th>
+                    <th className="table-cell">HSN</th>
+                    <th className="table-cell">Qty</th>
+                    <th className="table-cell">Rate</th>
+                    <th className="table-cell">GST %</th>
+                    <th className="table-cell text-right">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {detail.items.map((item, index) => (
-                    <tr key={index}>
-                      <td className="px-3 py-2 text-slate-700">{item.productName}</td>
-                      <td className="px-3 py-2 text-slate-500">{item.hsnCode || "-"}</td>
-                      <td className="px-3 py-2 text-slate-500">{item.quantity}</td>
-                      <td className="px-3 py-2 text-slate-500">₹ {formatMoney(item.unitPrice)}</td>
-                      <td className="px-3 py-2 text-slate-500">{item.gstRate}</td>
-                      <td className="px-3 py-2 text-right text-slate-700">
+                    <tr key={index} className="table-row">
+                      <td className="table-cell font-bold text-ink-900">{item.productName}</td>
+                      <td className="table-cell font-mono text-xs text-ink-500">
+                        {item.hsnCode || "—"}
+                      </td>
+                      <td className="table-cell text-ink-500">{item.quantity}</td>
+                      <td className="table-cell money text-ink-500">
+                        ₹ {formatMoney(item.unitPrice)}
+                      </td>
+                      <td className="table-cell text-ink-500">{item.gstRate}</td>
+                      <td className="table-cell money text-right font-bold text-ink-900">
                         ₹ {formatMoney(item.lineTotal)}
                       </td>
                     </tr>
@@ -187,26 +210,38 @@ export default function Invoices() {
               </table>
             </div>
 
-            <div className="ml-auto max-w-xs space-y-1 text-sm">
+            <div className="ml-auto max-w-xs space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Subtotal</span>
-                <span>₹ {formatMoney(detail.subTotal)}</span>
+                <span className="font-medium text-ink-500">Subtotal</span>
+                <span className="money font-bold text-ink-900">
+                  ₹ {formatMoney(detail.subTotal)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Discount</span>
-                <span>- ₹ {formatMoney(detail.discountAmount)}</span>
+                <span className="font-medium text-ink-500">Discount</span>
+                <span className="money font-bold text-rose-600">
+                  − ₹ {formatMoney(detail.discountAmount)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">CGST</span>
-                <span>₹ {formatMoney(detail.cgstAmount)}</span>
+                <span className="font-medium text-ink-500">CGST</span>
+                <span className="money font-bold text-ink-900">
+                  ₹ {formatMoney(detail.cgstAmount)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">SGST</span>
-                <span>₹ {formatMoney(detail.sgstAmount)}</span>
+                <span className="font-medium text-ink-500">SGST</span>
+                <span className="money font-bold text-ink-900">
+                  ₹ {formatMoney(detail.sgstAmount)}
+                </span>
               </div>
-              <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold">
-                <span>Grand Total</span>
-                <span>₹ {formatMoney(detail.grandTotal)}</span>
+              <div className="flex justify-between rounded-xl bg-ink-900 px-4 py-3">
+                <span className="text-xs font-bold uppercase tracking-widest text-white/50">
+                  Grand Total
+                </span>
+                <span className="money font-extrabold text-gold-300">
+                  ₹ {formatMoney(detail.grandTotal)}
+                </span>
               </div>
             </div>
 
@@ -214,9 +249,9 @@ export default function Invoices() {
               <button
                 type="button"
                 onClick={() => downloadPdf(detail)}
-                className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                className="btn-primary"
               >
-                Download PDF
+                <Download size={16} strokeWidth={2.4} /> Download PDF
               </button>
             </div>
           </div>

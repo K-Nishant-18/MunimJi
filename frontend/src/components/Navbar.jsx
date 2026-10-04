@@ -1,38 +1,55 @@
-import { useAuth } from "../context/AuthContext.jsx";
+import { useLocation } from "react-router-dom";
+import { Menu, Search } from "lucide-react";
+
+const titles = {
+  "/dashboard": "Dashboard",
+  "/billing": "Billing Counter",
+  "/stock": "Stock & Alerts",
+  "/products": "Products",
+  "/categories": "Categories",
+  "/invoices": "Invoices",
+  "/suppliers": "Suppliers",
+  "/purchases/new": "New Purchase",
+  "/reports": "Reports",
+};
 
 export default function Navbar({ onMenuClick }) {
-  const { user, logout } = useAuth();
+  const location = useLocation();
+  const title = titles[location.pathname] || "MunimJi";
+
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:px-6">
+    <header className="sticky top-0 z-20 flex h-[72px] shrink-0 items-center justify-between gap-4 border-b border-ink-900/[0.06] bg-white/80 px-4 backdrop-blur-md md:px-7">
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onMenuClick}
-          className="rounded p-1 text-slate-500 hover:bg-slate-100 md:hidden"
+          className="rounded-xl border border-ink-900/10 p-2 text-ink-600 hover:bg-ink-900/[0.04] md:hidden"
           aria-label="Open menu"
         >
-          Menu
+          <Menu size={18} />
         </button>
-        <span className="hidden text-sm text-slate-400 md:inline">
-          Inventory and GST billing for small shops
-        </span>
+        <div>
+          <h1 className="page-title leading-tight">{title}</h1>
+          <p className="hidden text-xs font-medium text-ink-500 sm:block">{today}</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        {user && (
-          <div className="text-right">
-            <p className="text-sm font-medium text-slate-700">{user.name}</p>
-            <p className="text-xs text-slate-400">{user.role}</p>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={logout}
-          className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-        >
-          Logout
-        </button>
+      <div className="flex items-center gap-3">
+        <div className="hidden items-center gap-2 rounded-xl border border-ink-900/10 bg-ink-900/[0.03] px-3 py-2 text-xs font-medium text-ink-500 lg:flex">
+          <Search size={14} />
+          <span>Invoice, product, batch...</span>
+          <kbd className="ml-4 rounded border border-ink-900/10 bg-white px-1.5 py-0.5 text-[10px] font-bold text-ink-500">
+            /
+          </kbd>
+        </div>
+        <span className="badge-warn hidden sm:inline-flex">GST Ready</span>
       </div>
     </header>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Check, Pencil, Plus, Tag, X } from "lucide-react";
 import api, { errorMessage } from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -79,32 +80,23 @@ export default function Categories() {
 
   return (
     <div className="max-w-2xl space-y-4">
-      <h1 className="text-xl font-semibold text-slate-800">Categories</h1>
-
-      {notice && (
-        <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {notice}
-        </div>
-      )}
-      {error && (
-        <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {error}
-        </div>
-      )}
+      {notice && <div className="alert-success">{notice}</div>}
+      {error && <div className="alert-error">{error}</div>}
 
       {isOwner && (
-        <form onSubmit={handleCreate} className="flex gap-2">
+        <form onSubmit={handleCreate} className="card flex gap-2 p-3">
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="New category name"
-            className="w-full max-w-xs rounded border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            placeholder="New category name..."
+            className="input flex-1"
           />
           <button
             type="submit"
             disabled={saving || !name.trim()}
-            className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="btn-primary"
           >
+            <Plus size={16} strokeWidth={2.6} />
             {saving ? "Adding..." : "Add"}
           </button>
         </form>
@@ -113,56 +105,73 @@ export default function Categories() {
       {loading ? (
         <Loader label="Loading categories..." />
       ) : categories.length === 0 ? (
-        <div className="rounded border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-400">
-          No categories yet.
+        <div className="empty-state">
+          <Tag size={26} className="text-ink-500" />
+          <p className="text-sm font-bold text-ink-700">No categories yet.</p>
+          <p className="text-xs font-medium text-ink-500">
+            Group products into aisles like Kirana or Medicines.
+          </p>
         </div>
       ) : (
-        <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <ul className="card divide-y divide-ink-900/[0.05] overflow-hidden">
           {categories.map((category) => (
-            <li key={category.id} className="flex items-center justify-between px-4 py-3">
+            <li
+              key={category.id}
+              className="flex items-center justify-between gap-3 px-5 py-3.5 transition hover:bg-brand-50/40"
+            >
               {editingId === category.id ? (
                 <div className="flex flex-1 items-center gap-2">
                   <input
                     value={editName}
                     onChange={(event) => setEditName(event.target.value)}
-                    className="rounded border border-slate-300 px-2 py-1 text-sm"
+                    className="input py-2"
+                    autoFocus
                   />
                   <button
                     type="button"
                     onClick={() => handleUpdate(category.id)}
-                    className="text-sm text-indigo-600 hover:underline"
+                    className="rounded-lg bg-brand-600 p-2 text-white hover:bg-brand-700"
+                    title="Save"
                   >
-                    Save
+                    <Check size={15} />
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingId(null)}
-                    className="text-sm text-slate-500 hover:underline"
+                    className="rounded-lg border border-ink-900/10 p-2 text-ink-500 hover:bg-ink-900/[0.04]"
+                    title="Cancel"
                   >
-                    Cancel
+                    <X size={15} />
                   </button>
                 </div>
               ) : (
                 <>
-                  <span className="text-sm font-medium text-slate-700">{category.name}</span>
+                  <span className="flex items-center gap-3 text-sm font-bold text-ink-900">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
+                      <Tag size={14} strokeWidth={2.4} />
+                    </span>
+                    {category.name}
+                  </span>
                   {isOwner && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-1">
                       <button
                         type="button"
                         onClick={() => {
                           setEditingId(category.id);
                           setEditName(category.name);
                         }}
-                        className="text-sm text-indigo-600 hover:underline"
+                        className="rounded-lg p-2 text-ink-500 transition hover:bg-brand-50 hover:text-brand-700"
+                        title="Edit"
                       >
-                        Edit
+                        <Pencil size={15} />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(category)}
-                        className="text-sm text-rose-600 hover:underline"
+                        className="rounded-lg p-2 text-ink-500 transition hover:bg-rose-50 hover:text-rose-600"
+                        title="Delete"
                       >
-                        Delete
+                        <X size={15} />
                       </button>
                     </div>
                   )}

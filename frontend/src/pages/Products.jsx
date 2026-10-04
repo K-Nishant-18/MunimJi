@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import api, { errorMessage, formatMoney } from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import Modal from "../components/Modal.jsx";
@@ -139,93 +140,93 @@ export default function Products() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-slate-800">Products</h1>
+        <form onSubmit={handleSearch} className="flex w-full max-w-md gap-2">
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-500"
+            />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by name or barcode..."
+              className="input pl-10"
+            />
+          </div>
+          <button type="submit" className="btn-ghost">
+            Search
+          </button>
+        </form>
         {isOwner && (
-          <button
-            type="button"
-            onClick={openCreate}
-            className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            New Product
+          <button type="button" onClick={openCreate} className="btn-primary">
+            <Plus size={16} strokeWidth={2.6} /> New Product
           </button>
         )}
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by name or barcode..."
-          className="w-full max-w-sm rounded border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-        />
-        <button
-          type="submit"
-          className="rounded border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50"
-        >
-          Search
-        </button>
-      </form>
-
-      {notice && (
-        <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {notice}
-        </div>
-      )}
-      {error && (
-        <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {error}
-        </div>
-      )}
+      {notice && <div className="alert-success">{notice}</div>}
+      {error && <div className="alert-error">{error}</div>}
 
       {loading ? (
         <Loader label="Loading products..." />
       ) : products.length === 0 ? (
-        <div className="rounded border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-400">
-          No products found. {isOwner && "Click 'New Product' to add one."}
+        <div className="empty-state">
+          <p className="text-sm font-bold text-ink-700">No products found.</p>
+          <p className="text-xs font-medium text-ink-500">
+            {isOwner ? "Click 'New Product' to add one." : "Try a different search."}
+          </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="card overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="table-head">
               <tr>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Barcode</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Unit</th>
-                <th className="px-4 py-3">HSN</th>
-                <th className="px-4 py-3">GST %</th>
-                <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3">Reorder</th>
-                {isOwner && <th className="px-4 py-3">Actions</th>}
+                <th className="table-cell">Name</th>
+                <th className="table-cell">Barcode</th>
+                <th className="table-cell">Category</th>
+                <th className="table-cell">Unit</th>
+                <th className="table-cell">HSN</th>
+                <th className="table-cell">GST %</th>
+                <th className="table-cell text-right">Price</th>
+                <th className="table-cell">Reorder</th>
+                {isOwner && <th className="table-cell text-right">Actions</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-700">{product.name}</td>
-                  <td className="px-4 py-3 text-slate-500">{product.barcode || "-"}</td>
-                  <td className="px-4 py-3 text-slate-500">{product.categoryName || "-"}</td>
-                  <td className="px-4 py-3 text-slate-500">{product.unit}</td>
-                  <td className="px-4 py-3 text-slate-500">{product.hsnCode || "-"}</td>
-                  <td className="px-4 py-3 text-slate-500">{product.gstRate}</td>
-                  <td className="px-4 py-3 text-slate-700">₹ {formatMoney(product.sellingPrice)}</td>
-                  <td className="px-4 py-3 text-slate-500">{product.reorderLevel}</td>
+                <tr key={product.id} className="table-row">
+                  <td className="table-cell font-bold text-ink-900">{product.name}</td>
+                  <td className="table-cell font-mono text-xs text-ink-500">
+                    {product.barcode || "—"}
+                  </td>
+                  <td className="table-cell">
+                    <span className="badge-neutral">{product.categoryName || "Uncategorized"}</span>
+                  </td>
+                  <td className="table-cell text-ink-500">{product.unit}</td>
+                  <td className="table-cell text-ink-500">{product.hsnCode || "—"}</td>
+                  <td className="table-cell text-ink-500">{product.gstRate}</td>
+                  <td className="table-cell money text-right font-bold text-ink-900">
+                    ₹ {formatMoney(product.sellingPrice)}
+                  </td>
+                  <td className="table-cell text-ink-500">{product.reorderLevel}</td>
                   {isOwner && (
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                    <td className="table-cell">
+                      <div className="flex justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => openEdit(product)}
-                          className="text-indigo-600 hover:underline"
+                          className="rounded-lg p-2 text-ink-500 transition hover:bg-brand-50 hover:text-brand-700"
+                          title="Edit"
                         >
-                          Edit
+                          <Pencil size={15} />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(product)}
-                          className="text-rose-600 hover:underline"
+                          className="rounded-lg p-2 text-ink-500 transition hover:bg-rose-50 hover:text-rose-600"
+                          title="Delete"
                         >
-                          Delete
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </td>
@@ -244,12 +245,8 @@ export default function Products() {
         title={editing ? "Edit Product" : "New Product"}
         onClose={() => setModalOpen(false)}
       >
-        {formError && (
-          <div className="mb-3 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {formError}
-          </div>
-        )}
-        <form onSubmit={handleSave} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {formError && <div className="alert-error mb-4">{formError}</div>}
+        <form onSubmit={handleSave} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Name">
             <input
               required
@@ -263,6 +260,7 @@ export default function Products() {
               value={form.barcode}
               onChange={(event) => setForm({ ...form, barcode: event.target.value })}
               className="input"
+              placeholder="EAN / manual code"
             />
           </Field>
           <Field label="Unit">
@@ -328,18 +326,10 @@ export default function Products() {
           </Field>
 
           <div className="mt-2 flex justify-end gap-2 sm:col-span-2">
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="rounded border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
-            >
+            <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
+            <button type="submit" disabled={saving} className="btn-primary">
               {saving ? "Saving..." : editing ? "Update" : "Create"}
             </button>
           </div>
@@ -352,7 +342,7 @@ export default function Products() {
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-600">{label}</span>
+      <span className="label">{label}</span>
       {children}
     </label>
   );

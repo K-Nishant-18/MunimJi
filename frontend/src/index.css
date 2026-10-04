@@ -2,12 +2,129 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-[#f4f6fa] font-sans text-ink-900;
+  }
+
+  /* Every rupee figure lines up in columns */
+  .money {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-ink-900;
+  }
 }
 
 @layer components {
+  /* ------------------------------- Surfaces ------------------------------ */
+  .card {
+    @apply rounded-2xl border border-ink-900/[0.06] bg-white shadow-card;
+  }
+
+  .card-pad {
+    @apply p-5;
+  }
+
+  /* ------------------------------- Headings ------------------------------ */
+  .page-title {
+    @apply text-[22px] font-extrabold tracking-tight text-ink-900;
+  }
+
+  .section-title {
+    @apply text-sm font-bold uppercase tracking-wider text-ink-500;
+  }
+
+  /* -------------------------------- Inputs -------------------------------- */
   .input {
-    @apply w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500;
+    @apply w-full rounded-xl border border-ink-900/10 bg-white px-3.5 py-2.5 text-sm text-ink-900
+           placeholder:text-ink-500/50 transition
+           focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10;
+  }
+
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink-600;
+  }
+
+  /* -------------------------------- Buttons ------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           transition focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-[0_6px_16px_rgba(15,136,109,0.25)]
+           hover:bg-brand-700 focus:ring-brand-500/25 active:scale-[0.98];
+  }
+
+  .btn-gold {
+    @apply btn bg-gold-400 text-ink-900 shadow-[0_6px_16px_rgba(246,185,60,0.35)]
+           hover:bg-gold-500 focus:ring-gold-300/40 active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply btn border border-ink-900/10 bg-white text-ink-700 hover:border-ink-900/20
+           hover:bg-ink-900/[0.03] focus:ring-ink-900/10;
+  }
+
+  .btn-danger {
+    @apply btn border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100
+           focus:ring-rose-300/40;
+  }
+
+  /* --------------------------------- Alerts -------------------------------- */
+  .alert-error {
+    @apply rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700;
+  }
+
+  .alert-success {
+    @apply rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-700;
+  }
+
+  /* --------------------------------- Badges -------------------------------- */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase
+           tracking-wide;
+  }
+
+  .badge-ok {
+    @apply badge bg-brand-100 text-brand-700;
+  }
+
+  .badge-warn {
+    @apply badge bg-gold-100 text-gold-600;
+  }
+
+  .badge-danger {
+    @apply badge bg-rose-100 text-rose-600;
+  }
+
+  .badge-neutral {
+    @apply badge bg-ink-900/[0.06] text-ink-600;
+  }
+
+  /* --------------------------------- Tables -------------------------------- */
+  .table-head {
+    @apply bg-ink-900/[0.03] text-[11px] font-bold uppercase tracking-wider text-ink-500;
+  }
+
+  .table-cell {
+    @apply px-4 py-3 align-middle;
+  }
+
+  .table-row {
+    @apply border-t border-ink-900/[0.05] transition hover:bg-brand-50/40;
+  }
+
+  /* -------------------------------- Empty state ---------------------------- */
+  .empty-state {
+    @apply card flex flex-col items-center justify-center gap-2 px-6 py-12 text-center
+           border-dashed;
   }
 }

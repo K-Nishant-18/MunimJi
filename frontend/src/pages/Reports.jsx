@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CalendarDays, FileText, Landmark } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -15,7 +16,7 @@ import api, { errorMessage, formatMoney } from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import StatCard from "../components/StatCard.jsx";
 
-const BAR_COLORS = ["#4f46e5", "#059669", "#d97706", "#e11d48", "#0891b2", "#7c3aed"];
+const BAR_COLORS = ["#0f886d", "#f6b93c", "#2a4069", "#e11d48", "#1ea785"];
 
 export default function Reports() {
   const [summary, setSummary] = useState(null);
@@ -71,24 +72,7 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-slate-800">Reports</h1>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          GST month
-          <input
-            type="month"
-            value={month}
-            onChange={(event) => changeMonth(event.target.value)}
-            className="rounded border border-slate-300 px-2 py-1.5"
-          />
-        </label>
-      </div>
-
-      {error && (
-        <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert-error">{error}</div>}
 
       {summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -96,57 +80,83 @@ export default function Reports() {
             title="Today's Sales"
             value={`₹ ${formatMoney(summary.todaySales)}`}
             subtitle={`${summary.todayInvoiceCount} invoices today`}
-            accent="indigo"
+            accent="brand"
+            icon={FileText}
           />
           <StatCard
             title="This Month"
             value={`₹ ${formatMoney(summary.monthSales)}`}
             subtitle={`${summary.monthInvoiceCount} invoices this month`}
-            accent="emerald"
+            accent="ink"
+            icon={Landmark}
           />
           <StatCard
             title="Low Stock"
             value={summary.lowStockCount}
             subtitle={`${summary.totalProducts} products total`}
-            accent="amber"
+            accent="gold"
+            icon={FileText}
           />
           <StatCard
             title="Expiring Soon"
             value={summary.expiringSoonCount}
             subtitle={`${summary.totalInvoices} invoices in total`}
             accent="rose"
+            icon={CalendarDays}
           />
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Monthly sales line */}
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-slate-700">Monthly Sales (last 12 months)</h2>
+        <div className="card card-pad">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="section-title">Monthly Sales</h2>
+            <span className="badge-neutral">12 months</span>
+          </div>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={monthly}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(value) => `₹ ${formatMoney(value)}`} />
-              <Line type="monotone" dataKey="total" stroke="#4f46e5" strokeWidth={2} dot={false} />
+              <Tooltip
+                formatter={(value) => `₹ ${formatMoney(value)}`}
+                contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="total"
+                stroke="#0f886d"
+                strokeWidth={2.5}
+                dot={{ r: 3, fill: "#0f886d" }}
+                activeDot={{ r: 5 }}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         {/* Top products bar */}
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold text-slate-700">Top Products (last 30 days)</h2>
+        <div className="card card-pad">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="section-title">Top Products</h2>
+            <span className="badge-neutral">Last 30 days</span>
+          </div>
           {top.length === 0 ? (
-            <p className="py-16 text-center text-sm text-slate-400">No sales in the last 30 days.</p>
+            <p className="py-16 text-center text-sm font-medium text-ink-500">
+              No sales in the last 30 days.
+            </p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={top} layout="vertical" margin={{ left: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="productName" tick={{ fontSize: 11 }} width={110} />
-                <Tooltip formatter={(value) => `₹ ${formatMoney(value)}`} />
-                <Bar dataKey="salesAmount" radius={[0, 4, 4, 0]}>
+                <Tooltip
+                  formatter={(value) => `₹ ${formatMoney(value)}`}
+                  cursor={{ fill: "rgba(15,136,109,0.06)" }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                />
+                <Bar dataKey="salesAmount" radius={[0, 6, 6, 0]}>
                   {top.map((_, index) => (
                     <Cell key={index} fill={BAR_COLORS[index % BAR_COLORS.length]} />
                   ))}
@@ -159,53 +169,87 @@ export default function Reports() {
 
       {/* GST summary */}
       {gst && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-700">GST Summary - {gst.month}</h2>
-            <span className="text-xs text-slate-400">{gst.invoiceCount} invoices</span>
+        <div className="card overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-900/[0.06] bg-ink-900/[0.02] px-6 py-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-100 text-gold-600">
+                <Landmark size={17} strokeWidth={2.2} />
+              </span>
+              <div>
+                <p className="text-sm font-extrabold text-ink-900">GST Summary</p>
+                <p className="text-xs font-medium text-ink-500">
+                  {gst.invoiceCount} invoices in {gst.month}
+                </p>
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-500">
+              Month
+              <input
+                type="month"
+                value={month}
+                onChange={(event) => changeMonth(event.target.value)}
+                className="input w-40 py-2"
+              />
+            </label>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <div className="rounded bg-slate-50 p-3">
-              <p className="text-xs text-slate-400">Taxable Value</p>
-              <p className="mt-1 text-lg font-semibold text-slate-700">
+          <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-4">
+            <div className="rounded-xl bg-ink-900/[0.03] p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                Taxable Value
+              </p>
+              <p className="money mt-1.5 text-lg font-extrabold text-ink-900">
                 ₹ {formatMoney(gst.totalTaxable)}
               </p>
             </div>
-            <div className="rounded bg-slate-50 p-3">
-              <p className="text-xs text-slate-400">CGST</p>
-              <p className="mt-1 text-lg font-semibold text-slate-700">₹ {formatMoney(gst.totalCgst)}</p>
+            <div className="rounded-xl bg-ink-900/[0.03] p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">CGST</p>
+              <p className="money mt-1.5 text-lg font-extrabold text-ink-900">
+                ₹ {formatMoney(gst.totalCgst)}
+              </p>
             </div>
-            <div className="rounded bg-slate-50 p-3">
-              <p className="text-xs text-slate-400">SGST</p>
-              <p className="mt-1 text-lg font-semibold text-slate-700">₹ {formatMoney(gst.totalSgst)}</p>
+            <div className="rounded-xl bg-ink-900/[0.03] p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500">SGST</p>
+              <p className="money mt-1.5 text-lg font-extrabold text-ink-900">
+                ₹ {formatMoney(gst.totalSgst)}
+              </p>
             </div>
-            <div className="rounded bg-indigo-50 p-3">
-              <p className="text-xs text-indigo-400">Total GST</p>
-              <p className="mt-1 text-lg font-semibold text-indigo-700">₹ {formatMoney(gst.totalGst)}</p>
+            <div className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-brand-100">
+                Total GST
+              </p>
+              <p className="money mt-1.5 text-lg font-extrabold text-white">
+                ₹ {formatMoney(gst.totalGst)}
+              </p>
             </div>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="overflow-x-auto px-6 pb-6">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+              <thead className="table-head">
                 <tr>
-                  <th className="py-2 pr-4">GST Rate</th>
-                  <th className="py-2 pr-4">Taxable Amount</th>
-                  <th className="py-2 pr-4">GST Amount</th>
+                  <th className="table-cell">GST Rate</th>
+                  <th className="table-cell text-right">Taxable Amount</th>
+                  <th className="table-cell text-right">GST Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {gst.byRate.map((row) => (
-                  <tr key={row.rate}>
-                    <td className="py-2 pr-4 font-medium text-slate-700">{row.rate}%</td>
-                    <td className="py-2 pr-4 text-slate-600">₹ {formatMoney(row.taxableAmount)}</td>
-                    <td className="py-2 pr-4 text-slate-600">₹ {formatMoney(row.gstAmount)}</td>
+                  <tr key={row.rate} className="table-row">
+                    <td className="table-cell">
+                      <span className="badge-warn">{row.rate}%</span>
+                    </td>
+                    <td className="table-cell money text-right font-bold text-ink-900">
+                      ₹ {formatMoney(row.taxableAmount)}
+                    </td>
+                    <td className="table-cell money text-right font-bold text-ink-900">
+                      ₹ {formatMoney(row.gstAmount)}
+                    </td>
                   </tr>
                 ))}
                 {gst.byRate.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="py-4 text-center text-slate-400">
+                    <td colSpan={3} className="table-cell py-6 text-center text-ink-500">
                       No GST data for {gst.month}.
                     </td>
                   </tr>

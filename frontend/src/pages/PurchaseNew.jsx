@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PackagePlus, Plus, Save, Trash2 } from "lucide-react";
 import api, { errorMessage, formatMoney } from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 
@@ -111,23 +112,24 @@ export default function PurchaseNew() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-slate-800">New Purchase</h1>
+      {notice && <div className="alert-success">{notice}</div>}
 
-      {notice && (
-        <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {notice}
+      <form onSubmit={handleSubmit} className="card p-6">
+        <div className="mb-5 flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-100 text-brand-700">
+            <PackagePlus size={17} strokeWidth={2.3} />
+          </span>
+          <div>
+            <p className="text-sm font-extrabold text-ink-900">Purchase details</p>
+            <p className="text-xs font-medium text-ink-500">
+              Each line becomes a stock batch with its own expiry date
+            </p>
+          </div>
         </div>
-      )}
-      {error && (
-        <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-          {error}
-        </div>
-      )}
 
-      <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-600">Supplier</span>
+            <span className="label">Supplier</span>
             <select
               required
               value={supplierId}
@@ -143,7 +145,7 @@ export default function PurchaseNew() {
             </select>
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-600">Supplier Bill No</span>
+            <span className="label">Supplier Bill No</span>
             <input
               value={supplierBillNo}
               onChange={(event) => setSupplierBillNo(event.target.value)}
@@ -152,7 +154,7 @@ export default function PurchaseNew() {
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-600">Purchase Date</span>
+            <span className="label">Purchase Date</span>
             <input
               required
               type="date"
@@ -163,28 +165,28 @@ export default function PurchaseNew() {
           </label>
         </div>
 
-        <div className="mt-5 overflow-x-auto">
+        <div className="mt-6 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="table-head">
               <tr>
-                <th className="py-2 pr-3">Product</th>
-                <th className="py-2 pr-3">Qty</th>
-                <th className="py-2 pr-3">Cost Price</th>
-                <th className="py-2 pr-3">Batch No</th>
-                <th className="py-2 pr-3">Expiry</th>
-                <th className="py-2 pr-3">Line Total</th>
-                <th className="py-2" />
+                <th className="table-cell">Product</th>
+                <th className="table-cell">Qty</th>
+                <th className="table-cell">Cost Price</th>
+                <th className="table-cell">Batch No</th>
+                <th className="table-cell">Expiry</th>
+                <th className="table-cell text-right">Line Total</th>
+                <th className="table-cell" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {rows.map((row, index) => (
-                <tr key={index}>
-                  <td className="py-2 pr-3">
+                <tr key={index} className="table-row">
+                  <td className="table-cell">
                     <select
                       required
                       value={row.productId}
                       onChange={(event) => updateRow(index, "productId", event.target.value)}
-                      className="input min-w-[180px]"
+                      className="input min-w-[180px] py-2"
                     >
                       <option value="">Select product...</option>
                       {products.map((product) => (
@@ -194,17 +196,17 @@ export default function PurchaseNew() {
                       ))}
                     </select>
                   </td>
-                  <td className="py-2 pr-3">
+                  <td className="table-cell">
                     <input
                       required
                       type="number"
                       min="1"
                       value={row.quantity}
                       onChange={(event) => updateRow(index, "quantity", event.target.value)}
-                      className="input w-20"
+                      className="input w-20 py-2"
                     />
                   </td>
-                  <td className="py-2 pr-3">
+                  <td className="table-cell">
                     <input
                       required
                       type="number"
@@ -212,37 +214,38 @@ export default function PurchaseNew() {
                       min="0.01"
                       value={row.costPrice}
                       onChange={(event) => updateRow(index, "costPrice", event.target.value)}
-                      className="input w-28"
+                      className="input w-28 py-2"
                     />
                   </td>
-                  <td className="py-2 pr-3">
+                  <td className="table-cell">
                     <input
                       required
                       value={row.batchNo}
                       onChange={(event) => updateRow(index, "batchNo", event.target.value)}
-                      className="input w-32"
+                      className="input w-32 py-2"
                       placeholder="BATCH-01"
                     />
                   </td>
-                  <td className="py-2 pr-3">
+                  <td className="table-cell">
                     <input
                       required
                       type="date"
                       value={row.expiryDate}
                       onChange={(event) => updateRow(index, "expiryDate", event.target.value)}
-                      className="input w-40"
+                      className="input w-40 py-2"
                     />
                   </td>
-                  <td className="py-2 pr-3 text-slate-600">
+                  <td className="table-cell money text-right font-bold text-ink-900">
                     ₹ {formatMoney((Number(row.quantity) || 0) * (Number(row.costPrice) || 0))}
                   </td>
-                  <td className="py-2">
+                  <td className="table-cell text-right">
                     <button
                       type="button"
                       onClick={() => removeRow(index)}
-                      className="text-rose-600 hover:underline"
+                      className="rounded-lg p-2 text-ink-500 transition hover:bg-rose-50 hover:text-rose-600"
+                      title="Remove row"
                     >
-                      Remove
+                      <Trash2 size={15} />
                     </button>
                   </td>
                 </tr>
@@ -251,61 +254,57 @@ export default function PurchaseNew() {
           </table>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={addRow}
-            className="rounded border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50"
-          >
-            + Add row
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <button type="button" onClick={addRow} className="btn-ghost">
+            <Plus size={15} strokeWidth={2.6} /> Add row
           </button>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-600">
-              Estimated total: <strong>₹ {formatMoney(estimatedTotal)}</strong>
+          <div className="flex items-center gap-5">
+            <span className="text-sm font-semibold text-ink-500">
+              Estimated total:{" "}
+              <strong className="money text-lg font-extrabold text-ink-900">
+                ₹ {formatMoney(estimatedTotal)}
+              </strong>
             </span>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
+            <button type="submit" disabled={saving} className="btn-primary">
+              <Save size={16} strokeWidth={2.4} />
               {saving ? "Saving..." : "Save Purchase"}
             </button>
           </div>
         </div>
 
-        {formError && (
-          <div className="mt-3 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {formError}
-          </div>
-        )}
+        {formError && <div className="alert-error mt-4">{formError}</div>}
       </form>
 
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-slate-700">Recent purchases</h2>
+        <h2 className="section-title">Recent purchases</h2>
         {purchases.length === 0 ? (
-          <div className="rounded border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-400">
-            No purchases recorded yet.
+          <div className="empty-state">
+            <p className="text-sm font-bold text-ink-700">No purchases recorded yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="card overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="table-head">
                 <tr>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Supplier</th>
-                  <th className="px-4 py-3">Bill No</th>
-                  <th className="px-4 py-3">Items</th>
-                  <th className="px-4 py-3">Total</th>
+                  <th className="table-cell">Date</th>
+                  <th className="table-cell">Supplier</th>
+                  <th className="table-cell">Bill No</th>
+                  <th className="table-cell">Items</th>
+                  <th className="table-cell text-right">Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {purchases.slice(0, 8).map((purchase) => (
-                  <tr key={purchase.id}>
-                    <td className="px-4 py-3 text-slate-600">{purchase.purchaseDate}</td>
-                    <td className="px-4 py-3 font-medium text-slate-700">{purchase.supplierName}</td>
-                    <td className="px-4 py-3 text-slate-500">{purchase.supplierBillNo || "-"}</td>
-                    <td className="px-4 py-3 text-slate-500">{purchase.items.length}</td>
-                    <td className="px-4 py-3 text-slate-700">₹ {formatMoney(purchase.total)}</td>
+                  <tr key={purchase.id} className="table-row">
+                    <td className="table-cell text-ink-500">{purchase.purchaseDate}</td>
+                    <td className="table-cell font-bold text-ink-900">{purchase.supplierName}</td>
+                    <td className="table-cell font-mono text-xs text-ink-500">
+                      {purchase.supplierBillNo || "—"}
+                    </td>
+                    <td className="table-cell text-ink-500">{purchase.items.length}</td>
+                    <td className="table-cell money text-right font-bold text-ink-900">
+                      ₹ {formatMoney(purchase.total)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
