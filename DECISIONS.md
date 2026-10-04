@@ -71,3 +71,16 @@ Simple, beginner-friendly choices made where the brief was ambiguous.
 18. **Concurrency**: `@Version` on `StockBatch`; `OptimisticLockingFailureException`
     is mapped to HTTP 409 with the message "Stock changed while billing.
     Please retry."
+
+19. **Default database is H2** (file mode, `backend/data/`), so a fresh clone
+    runs with zero install: `mvn spring-boot:run`. MySQL is supported through
+    the same `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` / `DB_DRIVER`
+    environment variables (README shows the exact values). `data.sql` is
+    written in SQL that runs on both (tested): `CURRENT_DATE + INTERVAL '45'
+    DAY`, `CURDATE()`, `CONCAT`, and idempotent
+    `INSERT ... SELECT ... WHERE NOT EXISTS (...)` instead of
+    MySQL-only `INSERT IGNORE`.
+
+20. **Seed identity columns**: `data.sql` inserts explicit ids (1, 2, 3 ...) so
+    foreign keys are readable; both MySQL and H2 move their identity counter
+    to max(id)+1 automatically after an explicit insert (verified).

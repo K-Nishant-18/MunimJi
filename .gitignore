@@ -1,5 +1,8 @@
 # Maven
 backend/target/
+
+# H2 database files (default dev database)
+backend/data/
 *.class
 *.jar
 !maven-wrapper.jar
