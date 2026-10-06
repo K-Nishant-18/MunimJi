@@ -1,27 +1,13 @@
 import { useState } from "react";
-import { ShieldAlert, UserPlus } from "lucide-react";
+import { ShieldAlert, UserPlus, UsersRound } from "lucide-react";
 import api, { errorMessage } from "../api/axios.js";
 import { useAuth } from "../context/AuthContext.jsx";
-
-const roles = [
-  {
-    value: "STAFF",
-    title: "Staff",
-    sub: "Billing, stock and products. No reports, purchases or user management.",
-  },
-  {
-    value: "OWNER",
-    title: "Owner",
-    sub: "Full access: reports, suppliers, purchases and adding more users.",
-  },
-];
 
 export default function Users() {
   const { isOwner } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("STAFF");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -36,13 +22,12 @@ export default function Users() {
         name: name.trim(),
         email: email.trim(),
         password,
-        role,
+        role: "STAFF",
       });
       setNotice(`${response.data.name} was created as ${response.data.role}.`);
       setName("");
       setEmail("");
       setPassword("");
-      setRole("STAFF");
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -72,9 +57,11 @@ export default function Users() {
             <UserPlus size={18} strokeWidth={2.4} />
           </span>
           <div>
-            <h1 className="text-lg font-extrabold tracking-tight text-ink-900">Add a user</h1>
+            <h1 className="text-lg font-extrabold tracking-tight text-ink-900">
+              Add a staff member
+            </h1>
             <p className="text-xs font-medium text-ink-500">
-              They can sign in with their email and password right away.
+              They sign in with their email and password and work inside your shop only.
             </p>
           </div>
         </div>
@@ -127,27 +114,15 @@ export default function Users() {
           />
         </div>
 
-        <div className="mt-5">
-          <p className="label">Role</p>
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            {roles.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setRole(item.value)}
-                className={`rounded-xl border p-3.5 text-left transition ${
-                  role === item.value
-                    ? "border-brand-500 bg-brand-50 shadow-glow"
-                    : "border-ink-900/10 bg-white hover:border-brand-500/50"
-                }`}
-              >
-                <span className="block text-sm font-extrabold text-ink-900">{item.title}</span>
-                <span className="mt-0.5 block text-[11px] font-medium leading-snug text-ink-500">
-                  {item.sub}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="mt-5 flex items-start gap-3 rounded-xl border border-dashed border-ink-900/15 bg-ink-900/[0.02] p-4">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
+            <UsersRound size={16} strokeWidth={2.4} />
+          </span>
+          <p className="text-xs font-medium leading-relaxed text-ink-500">
+            <span className="font-extrabold text-ink-900">Staff can</span> bill, manage stock,
+            products and categories. Reports, purchases, suppliers and user management stay with
+            you — every staff account belongs to this shop.
+          </p>
         </div>
 
         <button
@@ -156,7 +131,7 @@ export default function Users() {
           className="btn-primary mt-6 w-full py-3"
         >
           <UserPlus size={16} strokeWidth={2.6} />
-          {saving ? "Creating..." : "Create user"}
+          {saving ? "Creating..." : "Create staff member"}
         </button>
       </form>
 
@@ -165,10 +140,13 @@ export default function Users() {
           How access works
         </p>
         <ul className="mt-2 space-y-1.5 text-xs font-medium leading-relaxed text-ink-500">
-          <li>Only the owner can add users — the backend enforces this, not just this screen.</li>
           <li>
-            On a brand-new database (no users yet), the very first registration is open to
-            anyone and becomes the bootstrap owner.
+            Staff only see this shop's categories, products, stock and sales — the backend
+            enforces it, not just this screen.
+          </li>
+          <li>
+            New shop owners register themselves from the sign-in page; from here you can only
+            add staff to your own shop.
           </li>
           <li>Passwords need at least 6 characters; emails must be unique.</li>
         </ul>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BarChart3, Boxes, CalendarClock, KeyRound, PackageCheck, Receipt, ShieldCheck, Truck } from "lucide-react";
 import api, { errorMessage } from "../api/axios.js";
 import { DEMO_OWNER, setDemoMode } from "../api/mock.js";
@@ -207,6 +207,13 @@ export default function Login() {
                 </button>
               </div>
             </div>
+
+            <p className="mt-5 text-center text-sm font-medium text-ink-500">
+              New shop?{" "}
+              <Link to="/register" className="font-bold text-brand-600 hover:text-brand-700">
+                Create an owner account
+              </Link>
+            </p>
           </div>
         </div>
       </div>

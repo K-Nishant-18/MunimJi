@@ -594,11 +594,16 @@ export function handleMock(method, url, params, body) {
   } else if (m === "POST" && path === "/auth/register") {
     const b = body || {};
     const roleName = String(b.role || "OWNER").toUpperCase();
+    if (roleName !== "STAFF") {
+      // Offline demo cannot create new shops: fall through to the network
+      // error so the register page can explain it.
+      return null;
+    }
     data = {
       token: "offline-demo-new-user",
-      name: b.name || "New User",
+      name: b.name || "New Staff",
       email: String(b.email || "").toLowerCase(),
-      role: roleName === "STAFF" ? "STAFF" : "OWNER",
+      role: "STAFF",
     };
   } else if (m === "GET" && path === "/reports/summary") {
     data = reportSummary();

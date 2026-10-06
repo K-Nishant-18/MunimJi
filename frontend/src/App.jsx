@@ -9,6 +9,7 @@ import Invoices from "./pages/Invoices.jsx";
 import Login from "./pages/Login.jsx";
 import Products from "./pages/Products.jsx";
 import PurchaseNew from "./pages/PurchaseNew.jsx";
+import Register from "./pages/Register.jsx";
 import Reports from "./pages/Reports.jsx";
 import Stock from "./pages/Stock.jsx";
 import Suppliers from "./pages/Suppliers.jsx";
@@ -20,6 +21,7 @@ export default function App() {
       <Splash />
       <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
