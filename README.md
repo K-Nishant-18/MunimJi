@@ -150,7 +150,6 @@ Every error body looks the same: `{ "status": 400, "message": "..." }`.
 - `DECISIONS.md` - why each technical choice was made
 - `INTERVIEW_NOTES.md` - talking points for the project walkthrough
 - `PROGRESS.md` - build log with verification proof
-- `screenshots/` - app screenshots (placeholder)
 
 ## Known Limitations
 
