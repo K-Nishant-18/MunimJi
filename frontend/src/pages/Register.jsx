@@ -19,12 +19,16 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const response = await api.post("/auth/register", {
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        role: "OWNER",
-      });
+      const response = await api.post(
+        "/auth/register",
+        {
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          role: "OWNER",
+        },
+        { anonymous: true }
+      );
       login(response.data);
       navigate("/dashboard", { replace: true });
     } catch (err) {
