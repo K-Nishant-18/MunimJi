@@ -591,6 +591,15 @@ export function handleMock(method, url, params, body) {
       });
     });
     data = created;
+  } else if (m === "POST" && path === "/auth/register") {
+    const b = body || {};
+    const roleName = String(b.role || "OWNER").toUpperCase();
+    data = {
+      token: "offline-demo-new-user",
+      name: b.name || "New User",
+      email: String(b.email || "").toLowerCase(),
+      role: roleName === "STAFF" ? "STAFF" : "OWNER",
+    };
   } else if (m === "GET" && path === "/reports/summary") {
     data = reportSummary();
   } else if (m === "GET" && path === "/reports/monthly-sales") {
