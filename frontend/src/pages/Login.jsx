@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BarChart3, FileText, KeyRound, PackageCheck, ShieldCheck, Zap } from "lucide-react";
+import { BarChart3, Boxes, CalendarClock, KeyRound, PackageCheck, Receipt, ShieldCheck, Truck } from "lucide-react";
 import api, { errorMessage } from "../api/axios.js";
 import { DEMO_OWNER, setDemoMode } from "../api/mock.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { BrandTile } from "../components/Brand.jsx";
 
 const features = [
-  { icon: PackageCheck, text: "FEFO stock batches with expiry alerts" },
-  { icon: FileText, text: "GST invoices with CGST/SGST and PDF" },
-  { icon: BarChart3, text: "Sales, top products and GST reports" },
+  { icon: Receipt, title: "GST Billing", sub: "CGST/SGST, discounts & invoice PDF" },
+  { icon: PackageCheck, title: "FEFO Stock", sub: "Expiry-first batch deduction" },
+  { icon: CalendarClock, title: "Live Alerts", sub: "Low, expiring & expired batches" },
+  { icon: Boxes, title: "Catalog", sub: "Products, barcodes & categories" },
+  { icon: Truck, title: "Purchases", sub: "Supplier bills that add batches" },
+  { icon: BarChart3, title: "Reports", sub: "Sales, top products & GST" },
 ];
 
 export default function Login() {
@@ -65,53 +68,68 @@ export default function Login() {
   return (
     <div className="flex min-h-screen">
       {/* ---------------------------- Brand panel ---------------------------- */}
-      <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-ink-900 p-10 lg:flex">
-        {/* glow + grid decoration */}
-        <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-gold-400/10 blur-3xl" />
+      <div className="relative hidden w-[46%] flex-col overflow-hidden bg-ink-900 p-8 lg:flex">
+        {/* backdrop: corner spotlights + geometric outlines */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
-            backgroundSize: "44px 44px",
-          }}
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(110% 75% at 0% 0%, rgba(30,167,133,0.20), transparent 55%)" }}
         />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(85% 60% at 100% 100%, rgba(246,185,60,0.10), transparent 60%)" }}
+        />
+        <div className="pointer-events-none absolute -right-20 top-[20%] h-72 w-72 rotate-12 rounded-[2.5rem] border border-white/[0.07]" />
+        <div className="pointer-events-none absolute -right-6 top-[28%] h-52 w-52 rotate-12 rounded-[2rem] bg-white/[0.03]" />
 
         <div className="relative">
-          <BrandTile size={46} />
+          <BrandTile size={40} />
         </div>
 
-        <div className="relative max-w-md">
-          <h2 className="text-[38px] font-extrabold leading-[1.1] tracking-tight text-white">
+        <div className="relative flex flex-1 flex-col justify-center py-4">
+          <h2 className="text-[36px] font-extrabold leading-[1.08] tracking-tight text-white">
             Run your shop like a{" "}
             <span className="bg-gradient-to-r from-gold-300 to-gold-500 bg-clip-text text-transparent">
               pro.
             </span>
           </h2>
-          <p className="mt-4 text-sm leading-relaxed text-white/50">
-            Purchase batches, counter billing with live GST, expiry-first stock
-            deduction and reports the accountant will actually accept.
+          <p className="mt-2.5 max-w-sm text-sm leading-relaxed text-white/50">
+            Billing, stock and reports — everything your GST counter needs, in one place.
           </p>
 
-          <ul className="mt-8 space-y-4">
-            {features.map((feature) => {
+          {/* feature tiles */}
+          <div className="mt-6 grid max-w-xl grid-cols-2 gap-2.5">
+            {features.map((feature, index) => {
               const Icon = feature.icon;
+              const gold = index % 2 === 1;
               return (
-                <li key={feature.text} className="flex items-center gap-3 text-sm font-semibold text-white/80">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.07] text-brand-300">
-                    <Icon size={17} strokeWidth={2.2} />
+                <div
+                  key={feature.title}
+                  className="flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-3.5"
+                >
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                      gold ? "bg-gold-400/15 text-gold-300" : "bg-brand-500/15 text-brand-300"
+                    }`}
+                  >
+                    <Icon size={16} strokeWidth={2.4} />
                   </span>
-                  {feature.text}
-                </li>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-bold text-white/90">{feature.title}</p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-white/45">{feature.sub}</p>
+                  </div>
+                </div>
               );
             })}
-          </ul>
-        </div>
+          </div>
 
-        <p className="relative text-xs font-medium text-white/30">
-          Fresher portfolio project · Spring Boot + React · H2 / MySQL ready
-        </p>
+          <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-wider text-white/35">
+            <span>Owner &amp; Staff roles</span>
+            <span className="text-white/20">·</span>
+            <span>Invoice PDFs</span>
+            <span className="text-white/20">·</span>
+            <span>Offline demo ready</span>
+          </p>
+        </div>
       </div>
 
       {/* ------------------------------ Login form ---------------------------- */}
@@ -190,11 +208,6 @@ export default function Login() {
               </div>
             </div>
           </div>
-
-          <p className="mt-5 flex items-center justify-center gap-1.5 text-xs font-medium text-ink-500">
-            <Zap size={13} className="text-gold-500" />
-            Backend on :8080 · Vite on :5173
-          </p>
         </div>
       </div>
     </div>
