@@ -28,3 +28,6 @@ npm-debug.log*
 # Logs
 *.log
 logs/
+
+# Office temp files
+~$*
