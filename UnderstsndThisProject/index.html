@@ -142,10 +142,10 @@
   <header>
     <div class="eyebrow">UnderstsndThisProject</div>
     <h1>MunimJi <span class="accent">Diagram Index</span></h1>
-    <p class="sub">Seven interactive diagrams for the inventory + GST billing app —
+    <p class="sub">Nine interactive diagrams for the inventory + GST billing app —
        open any card to explore it full-screen with dark/light themes and export tools.</p>
     <div class="stats">
-      <span>7 diagrams</span>
+      <span>9 diagrams</span>
       <span>9/9 showcase checks each</span>
       <span>visual-checked at 1440–2048px</span>
       <span>works offline</span>
@@ -160,7 +160,7 @@
       </div>
       <div class="body">
         <div class="row"><h2>Runtime System Architecture</h2><span class="badge">architecture</span></div>
-        <p>How the app runs: client tab + Vite dev server, Spring Boot jar on :8080 (Tomcat threads → JWT filter → controllers → services → JPA → HikariCP), in-process OpenPDF, trust boundaries.</p>
+        <p>How the app runs: client tab + Vite dev server, Spring Boot jar on :8080 (Tomcat threads → JWT filter → tenant context → controllers → services → JPA → HikariCP), in-process OpenPDF, trust boundaries.</p>
         <div class="open">Open diagram</div>
       </div>
     </a>
@@ -172,7 +172,7 @@
       </div>
       <div class="body">
         <div class="row"><h2>High-Level Design</h2><span class="badge">architecture</span></div>
-        <p>Nine components with ownership boundaries — auth, billing, stock, dashboard and reporting modules and their dependencies.</p>
+        <p>Nine components with ownership boundaries — auth (JWT + per-shop tenant context), billing, stock, dashboard and reporting modules and their dependencies.</p>
         <div class="open">Open diagram</div>
       </div>
     </a>
@@ -184,7 +184,7 @@
       </div>
       <div class="body">
         <div class="row"><h2>Low-Level Design</h2><span class="badge">architecture</span></div>
-        <p>Class-level design in three tiers: controllers, services, repositories, DTOs and entity relationships.</p>
+        <p>Class-level design in three tiers: controllers, services, owner-scoped repositories, entities — plus the public register rules and tenant context.</p>
         <div class="open">Open diagram</div>
       </div>
     </a>
@@ -196,7 +196,7 @@
       </div>
       <div class="body">
         <div class="row"><h2>Billing Sequence</h2><span class="badge">sequence</span></div>
-        <p>Bill creation call sequence across 7 participants: login, item scan, FEFO check, GST computation, persistence, PDF and stock deduction.</p>
+        <p>Bill creation call sequence across 7 participants: login, item scan, tenant check, owner-scoped FEFO, GST computation, persistence, PDF and stock deduction.</p>
         <div class="open">Open diagram</div>
       </div>
     </a>
@@ -220,7 +220,7 @@
       </div>
       <div class="body">
         <div class="row"><h2>Stock Dataflow</h2><span class="badge">dataflow</span></div>
-        <p>Stock pipeline through 5 stages: inputs (purchases, billing, adjustments) → batch store → queries → dashboard alerts → reporting.</p>
+        <p>Stock pipeline through 5 stages: inputs (purchases, billing, adjustments) → batch store → per-shop queries → dashboard alerts → reporting.</p>
         <div class="open">Open diagram</div>
       </div>
     </a>
@@ -233,6 +233,30 @@
       <div class="body">
         <div class="row"><h2>Stock Batch Lifecycle</h2><span class="badge">lifecycle</span></div>
         <p>Batch lifecycle across three lanes: created → active → depleted, with low / expiring / expired alert states and their guards.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="AuthSequence.html">
+      <div class="thumb"><span class="num">8</span>
+        <img class="thumb-dark"  src="AuthSequence.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="AuthSequence.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Auth &amp; Tenant Sequence</h2><span class="badge">sequence</span></div>
+        <p>Registration to scoped read: anonymous register creates an OWNER (token + auto-login), every request resolves AppUserDetails(userId, tenantId) and queries only owner_id-scoped rows.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="TenantIsolation.html">
+      <div class="thumb"><span class="num">9</span>
+        <img class="thumb-dark"  src="TenantIsolation.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="TenantIsolation.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Tenant Data Isolation</h2><span class="badge">architecture</span></div>
+        <p>Two sessions through the shared JWT filter and CurrentTenant context into owner-scoped repositories, with security-group boundaries per shop and 404 on cross-shop ids.</p>
         <div class="open">Open diagram</div>
       </div>
     </a>

@@ -24,7 +24,7 @@
           "hikari",
           "db"
         ],
-        "note": "Every API call travels eight hops: tab, worker thread, JWT check, controllers, services, JPA, pool, SQL."
+        "note": "Every API call travels eight hops: tab, worker thread, JWT + tenant check, controllers, services, JPA, pool, SQL."
       },
       {
         "id": "dev-vs-prod",
@@ -86,7 +86,7 @@
       "id": "filter",
       "type": "security",
       "label": "JWT Filter Chain",
-      "sublabel": "JwtAuthFilter + BCrypt",
+      "sublabel": "JwtAuthFilter → CurrentTenant",
       "tag": "stateless",
       "pos": [
         500,
@@ -100,7 +100,7 @@
     {
       "id": "api",
       "type": "backend",
-      "label": "9 REST Controllers",
+      "label": "8 REST Controllers",
       "sublabel": "DTO in / DTO out",
       "pos": [
         730,
@@ -115,7 +115,7 @@
       "id": "svc",
       "type": "backend",
       "label": "Service Layer",
-      "sublabel": "GST, FEFO, invoice no.",
+      "sublabel": "GST, FEFO, per-shop no.",
       "tag": "@Transactional",
       "pos": [
         960,
@@ -251,7 +251,7 @@
       "id": "filter-to-api",
       "from": "filter",
       "to": "api",
-      "label": "identity proved",
+      "label": "principal + tenantId",
       "variant": "security",
       "labelAt": [
         702,
@@ -374,7 +374,7 @@
       "title": "Trust boundary",
       "items": [
         "Stateless JWT (HS256, 24 h) is checked before any controller runs",
-        "The database is reachable only through the pooled connections"
+        "CurrentTenant scopes every query to the caller's shop; foreign ids 404"
       ]
     }
   ]

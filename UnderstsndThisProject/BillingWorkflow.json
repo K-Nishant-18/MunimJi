@@ -139,7 +139,7 @@
                       "col":  4,
                       "type":  "backend",
                       "label":  "Assign Number",
-                      "sublabel":  "INV-YYYY-NNNN"
+                      "sublabel":  "per-shop INV-YYYY-NNNN"
                   },
                   {
                       "id":  "commit",
@@ -243,7 +243,7 @@
                       "dot":  "emerald",
                       "title":  "Happy path",
                       "items":  [
-                                    "Submit reaches the service only after JWT checks pass",
+                                    "Submit reaches the service only after JWT and tenant checks pass",
                                     "FEFO deducts the batches that expire first",
                                     "Number, lines, and stock commit together"
                                 ]
@@ -252,7 +252,7 @@
                       "dot":  "rose",
                       "title":  "Failure equals nothing saved",
                       "items":  [
-                                    "Bad line quantities fail validation before any write",
+                                    "Bad line quantities and foreign product ids fail before any write",
                                     "A shortage throws inside the transaction",
                                     "The client always gets {status, message}"
                                 ]
@@ -263,7 +263,7 @@
                       "items":  [
                                     "The ApiError lands back on the draft bill",
                                     "Nothing was persisted, so editing is safe",
-                                    "Resubmit runs the exact same checks"
+                                    "Resubmit runs the same JWT, tenant and stock checks"
                                 ]
                   }
               ]

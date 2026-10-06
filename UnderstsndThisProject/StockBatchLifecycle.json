@@ -31,7 +31,7 @@
           "low",
           "expiring"
         ],
-        "note": "Low stock and near-expiry are derived checks, not stored columns."
+        "note": "Low stock and near-expiry are derived per-shop checks, not stored columns."
       },
       {
         "id": "time-exit",
@@ -239,7 +239,7 @@
       "dot": "cyan",
       "title": "Alert flags",
       "items": [
-        "Low stock and near-expiry are queries, not columns",
+        "Low stock and near-expiry are per-shop queries, not columns",
         "They appear on the alerts page and never block sales"
       ]
     },

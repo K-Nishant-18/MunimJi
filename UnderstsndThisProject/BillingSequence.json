@@ -22,7 +22,7 @@
           "api",
           "jwt"
         ],
-        "note": "The request proves who it is before any controller runs."
+        "note": "The request proves identity and shop before any controller runs."
       },
       {
         "id": "create-bill",
@@ -59,7 +59,7 @@
       "id": "app",
       "type": "frontend",
       "label": "React App",
-      "sublabel": "authFetch"
+      "sublabel": "axios + JWT"
     },
     {
       "id": "api",
@@ -71,7 +71,7 @@
       "id": "jwt",
       "type": "security",
       "label": "JWT Filter",
-      "sublabel": "verify + role"
+      "sublabel": "verify role + tenant"
     },
     {
       "id": "svc",
@@ -139,7 +139,7 @@
       "from": "jwt",
       "to": "api",
       "y": 244,
-      "label": "claims + role ok",
+      "label": "principal + tenant ok",
       "variant": "return"
     },
     {
@@ -149,14 +149,14 @@
       "y": 272,
       "label": "createInvoice(dto)",
       "variant": "emphasis",
-      "note": "allocates INV-YYYY-NNNN, rolls back on any stock error"
+      "note": "allocates this shop's INV-YYYY-NNNN, rolls back on any stock error"
     },
     {
       "id": "fefo-query",
       "from": "svc",
       "to": "batch",
       "y": 300,
-      "label": "FEFO query, expiresAt asc",
+      "label": "owner-scoped FEFO, expiresAt asc",
       "variant": "default"
     },
     {
@@ -251,9 +251,9 @@
       "dot": "emerald",
       "title": "Main path",
       "items": [
-        "The request clears the JWT filter before any controller code",
+        "The JWT filter proves identity and resolves the caller's shop",
         "InvoiceService owns the whole bill in one @Transactional method",
-        "The response is a DTO; the JPA entity never leaves the server"
+        "Lookups are shop-scoped (foreign id 404); responses stay DTOs"
       ]
     },
     {

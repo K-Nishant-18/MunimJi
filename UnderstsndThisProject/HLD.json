@@ -47,7 +47,7 @@
       "id": "spa",
       "type": "frontend",
       "label": "React SPA",
-      "sublabel": "10 pages, Tailwind UI",
+      "sublabel": "12 pages, Tailwind UI",
       "tag": "browser :5173",
       "pos": [
         40,
@@ -76,7 +76,7 @@
       "id": "security",
       "type": "security",
       "label": "Security Subsystem",
-      "sublabel": "Spring Security + JWT filter",
+      "sublabel": "JWT filter + CurrentTenant",
       "tag": "OWNER / STAFF",
       "pos": [
         255,
@@ -148,7 +148,7 @@
       "id": "repo",
       "type": "backend",
       "label": "Spring Data Repos",
-      "sublabel": "9 repositories, JPQL",
+      "sublabel": "9 repos, tenant-scoped JPQL",
       "pos": [
         785,
         270
@@ -280,7 +280,7 @@
       "dot": "cyan",
       "title": "Data and config",
       "items": [
-        "Schema from Hibernate ddl-auto=update, idempotent data.sql seed",
+        "Schema from Hibernate ddl-auto=update; data.sql seeds one owner shop",
         "All knobs come from env vars: DB_*, JWT_SECRET, SEED_MODE, SHOP_*"
       ]
     },
@@ -288,7 +288,8 @@
       "dot": "rose",
       "title": "Key design decisions",
       "items": [
-        "Stateless JWT sessions instead of server sessions",
+        "Stateless JWT sessions; CurrentTenant scopes every request to one shop",
+        "Owner self-registers, adds only staff; every row carries owner_id",
         "BigDecimal(19,2) money rounded HALF_UP in one utility",
         "One database transaction per bill with automatic rollback"
       ]

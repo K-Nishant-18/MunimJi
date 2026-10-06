@@ -5280,15 +5280,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="454" y="258" class="t-muted" font-size="6.6" text-anchor="middle">earliest expiry first</text>
         </g>
 
-        <g id="node-assign" data-node-id="assign" data-node-label="Assign Number" tabindex="0" role="button" aria-label="Focus Assign Number, INV-YYYY-NNNN, Service + Database › Commit" aria-pressed="false" data-node-kind="backend" data-node-sublabel="INV-YYYY-NNNN" data-node-context="Service + Database › Commit">
-          <title>Assign Number · INV-YYYY-NNNN · Service + Database › Commit</title>
+        <g id="node-assign" data-node-id="assign" data-node-label="Assign Number" tabindex="0" role="button" aria-label="Focus Assign Number, per-shop INV-YYYY-NNNN, Service + Database › Commit" aria-pressed="false" data-node-kind="backend" data-node-sublabel="per-shop INV-YYYY-NNNN" data-node-context="Service + Database › Commit">
+          <title>Assign Number · per-shop INV-YYYY-NNNN · Service + Database › Commit</title>
           <rect x="528" y="220" width="92" height="52" rx="6" class="c-mask"/>
           <rect x="528" y="220" width="92" height="52" rx="6" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(534 226) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="574" y="241" class="t-primary" font-size="10.7" font-weight="600" text-anchor="middle">Assign Number</text>
-          <text data-detail="context" x="574" y="258" class="t-muted" font-size="8" text-anchor="middle">INV-YYYY-NNNN</text>
+          <text data-detail="context" x="574" y="258" class="t-muted" font-size="6.3" text-anchor="middle">per-shop INV-YYYY-NNNN</text>
         </g>
 
         <g id="node-commit" data-node-id="commit" data-node-label="Commit Bill" tabindex="0" role="button" aria-label="Focus Commit Bill, invoice + lines + stock, Service + Database › Commit" aria-pressed="false" data-node-kind="database" data-node-sublabel="invoice + lines + stock" data-node-context="Service + Database › Commit">
@@ -5536,7 +5536,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>Happy path</h3>
         </div>
         <ul>
-          <li>&bull; Submit reaches the service only after JWT checks pass</li>
+          <li>&bull; Submit reaches the service only after JWT and tenant checks pass</li>
           <li>&bull; FEFO deducts the batches that expire first</li>
           <li>&bull; Number, lines, and stock commit together</li>
         </ul>
@@ -5548,7 +5548,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>Failure equals nothing saved</h3>
         </div>
         <ul>
-          <li>&bull; Bad line quantities fail validation before any write</li>
+          <li>&bull; Bad line quantities and foreign product ids fail before any write</li>
           <li>&bull; A shortage throws inside the transaction</li>
           <li>&bull; The client always gets {status, message}</li>
         </ul>
@@ -5562,7 +5562,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <ul>
           <li>&bull; The ApiError lands back on the draft bill</li>
           <li>&bull; Nothing was persisted, so editing is safe</li>
-          <li>&bull; Resubmit runs the exact same checks</li>
+          <li>&bull; Resubmit runs the same JWT, tenant and stock checks</li>
         </ul>
       </div>
     </div>

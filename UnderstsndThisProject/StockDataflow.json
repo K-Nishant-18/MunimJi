@@ -32,7 +32,7 @@
           "invoice",
           "product"
         ],
-        "note": "Billing consumes the soonest-expiring stock first."
+        "note": "Billing consumes the shop's soonest-expiring stock first."
       },
       {
         "id": "downstream",
@@ -44,7 +44,7 @@
           "alerts",
           "ui"
         ],
-        "note": "Alerts, reports, and PDFs read stored rows, never live memory."
+        "note": "Alerts, reports, and PDFs read one shop's stored rows, never live memory."
       }
     ]
   },
@@ -70,7 +70,7 @@
       "id": "purchase",
       "type": "backend",
       "label": "Stock Purchase",
-      "sublabel": "POST /api/stock/purchase",
+      "sublabel": "POST /api/purchases",
       "stage": 0,
       "row": 0,
       "tag": "creates batch"
@@ -105,7 +105,7 @@
       "id": "alerts",
       "type": "backend",
       "label": "Alerts",
-      "sublabel": "low stock + expiring",
+      "sublabel": "per-shop low + expiring",
       "stage": 2,
       "row": 2
     },
@@ -194,7 +194,7 @@
       "from": "batch",
       "to": "alerts",
       "label": "qty + expiry",
-      "classification": "threshold scan",
+      "classification": "owner-scoped scan",
       "variant": "default",
       "route": "straight",
       "fromSide": "bottom",
@@ -235,7 +235,7 @@
       "from": "invoice",
       "to": "reports",
       "label": "aggregate queries",
-      "classification": "JPQL",
+      "classification": "tenant-scoped JPQL",
       "variant": "default",
       "route": "straight",
       "labelAt": [

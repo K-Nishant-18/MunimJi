@@ -39,7 +39,7 @@
           "pages",
           "api"
         ],
-        "note": "Pages never call fetch directly; authFetch wraps every request."
+        "note": "Pages never call fetch directly; the axios client attaches the JWT."
       }
     ]
   },
@@ -48,7 +48,7 @@
       "id": "pages",
       "type": "frontend",
       "label": "src/pages",
-      "sublabel": "10 page components",
+      "sublabel": "12 page components",
       "tag": "lazy routes",
       "pos": [
         40,
@@ -63,7 +63,7 @@
       "id": "api",
       "type": "frontend",
       "label": "src/api",
-      "sublabel": "authFetch wrapper",
+      "sublabel": "axios client + interceptors",
       "tag": "axios + JWT",
       "pos": [
         270,
@@ -78,7 +78,7 @@
       "id": "auth",
       "type": "security",
       "label": "Security Layer",
-      "sublabel": "JwtAuthFilter, JwtService",
+      "sublabel": "JwtAuthFilter, CurrentTenant",
       "tag": "SecurityConfig",
       "pos": [
         505,
@@ -123,7 +123,7 @@
       "id": "repositories",
       "type": "backend",
       "label": "Repositories",
-      "sublabel": "9 JpaRepository interfaces",
+      "sublabel": "9 interfaces, owner-scoped",
       "pos": [
         480,
         262
@@ -137,7 +137,7 @@
       "id": "entities",
       "type": "database",
       "label": "Entities",
-      "sublabel": "10 @Entity classes",
+      "sublabel": "9 entities + owner_id",
       "tag": "@Version, DECIMAL",
       "pos": [
         480,
@@ -248,9 +248,9 @@
       "dot": "emerald",
       "title": "Backend call chain",
       "items": [
-        "JwtAuthFilter runs before any controller; /api/auth/login and /api/health stay public",
-        "Controller validates the DTO, service owns business rules, repository owns queries",
-        "GlobalExceptionHandler maps exceptions to {status, message} ApiError"
+        "JwtAuthFilter runs first; /api/auth/login and /api/auth/register stay public",
+        "Register: anonymous becomes OWNER, an owner token adds only STAFF, staff gets 403",
+        "Services resolve CurrentTenant; repos filter owner_id; errors map to {status, message}"
       ]
     },
     {
@@ -258,7 +258,7 @@
       "title": "Frontend call chain",
       "items": [
         "App boots AuthContext, token lives in localStorage, Layout renders shell + routes",
-        "authFetch attaches Authorization header; 401 clears session and redirects to login",
+        "axios interceptor attaches Authorization; /auth/register sends no token; 401 redirects",
         "Pages stay dumb: fetch, render, mutate, refetch"
       ]
     },
