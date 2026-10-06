@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, WifiOff } from "lucide-react";
+import { DEMO_MODE_EVENT, isDemoMode } from "../api/mock.js";
 
 const titles = {
   "/dashboard": "Dashboard",
@@ -16,6 +18,17 @@ const titles = {
 export default function Navbar({ onMenuClick }) {
   const location = useLocation();
   const title = titles[location.pathname] || "MunimJi";
+  const [offlineDemo, setOfflineDemo] = useState(isDemoMode());
+
+  useEffect(() => {
+    const sync = () => setOfflineDemo(isDemoMode());
+    window.addEventListener(DEMO_MODE_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(DEMO_MODE_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "short",
@@ -49,6 +62,12 @@ export default function Navbar({ onMenuClick }) {
             /
           </kbd>
         </div>
+        {offlineDemo && (
+          <span className="badge-warn inline-flex items-center gap-1.5">
+            <WifiOff size={12} strokeWidth={2.6} />
+            Offline demo · mock data
+          </span>
+        )}
         <span className="badge-warn hidden sm:inline-flex">GST Ready</span>
       </div>
     </header>

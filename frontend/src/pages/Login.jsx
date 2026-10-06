@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, FileText, KeyRound, PackageCheck, ShieldCheck, Zap } from "lucide-react";
 import api, { errorMessage } from "../api/axios.js";
+import { DEMO_OWNER, setDemoMode } from "../api/mock.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { BrandTile } from "../components/Brand.jsx";
 
@@ -28,7 +29,28 @@ export default function Login() {
       login(response.data);
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(errorMessage(err, "Login failed"));
+      // Backend not connected: only the dummy Owner credential may enter,
+      // and the app runs on the offline mock dataset from there on.
+      if (err.request && !err.response) {
+        const isDemoOwner =
+          email.trim().toLowerCase() === DEMO_OWNER.email && password === DEMO_OWNER.password;
+        if (isDemoOwner) {
+          setDemoMode(true);
+          login({
+            token: "offline-demo-token",
+            name: "Owner (Offline Demo)",
+            email: DEMO_OWNER.email,
+            role: "OWNER",
+          });
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+        setError(
+          `Backend not reachable. Offline demo access (Owner only): ${DEMO_OWNER.email} / ${DEMO_OWNER.password}`
+        );
+      } else {
+        setError(errorMessage(err, "Login failed"));
+      }
     } finally {
       setLoading(false);
     }
