@@ -56,14 +56,8 @@ export default function Login() {
           }}
         />
 
-        <div className="relative flex items-center gap-3">
-          <BrandTile size={40} />
-          <div className="leading-tight">
-            <p className="text-lg font-extrabold text-white">MunimJi</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-300">
-              Inventory &amp; GST Billing
-            </p>
-          </div>
+        <div className="relative">
+          <BrandTile size={46} />
         </div>
 
         <div className="relative max-w-md">
@@ -101,14 +95,8 @@ export default function Login() {
       {/* ------------------------------ Login form ---------------------------- */}
       <div className="flex flex-1 items-center justify-center bg-[#f4f6fa] p-5">
         <div className="w-full max-w-[400px] animate-fadeUp">
-          <div className="mb-7 flex items-center gap-3 lg:hidden">
-            <BrandTile size={38} />
-            <div className="leading-tight">
-              <p className="text-lg font-extrabold text-ink-900">MunimJi</p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-600">
-                GST Billing
-              </p>
-            </div>
+          <div className="mb-7 lg:hidden">
+            <BrandTile size={42} />
           </div>
 
           <div className="card p-7">

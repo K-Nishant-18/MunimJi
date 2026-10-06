@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Splash from "./components/Splash.jsx";
 import Billing from "./pages/Billing.jsx";
 import Categories from "./pages/Categories.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -14,7 +15,9 @@ import Suppliers from "./pages/Suppliers.jsx";
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <Splash />
+      <Routes>
       <Route path="/login" element={<Login />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
@@ -31,6 +34,7 @@ export default function App() {
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
