@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MunimJi — Diagram Index</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #131824;
+    --panel-hover: #1a2133;
+    --border: #232b3d;
+    --text: #e7eaf3;
+    --muted: #8b93a7;
+    --gold: #d4a94e;
+    --brand: #4f8cff;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f5f8;
+      --panel: #ffffff;
+      --panel-hover: #f8f9fc;
+      --border: #e2e5ec;
+      --text: #1a1f2e;
+      --muted: #667085;
+      --gold: #a67c1f;
+      --brand: #2f6fe0;
+      --shadow: 0 8px 24px rgba(20,30,60,.08);
+    }
+    .thumb-dark { display: none; }
+  }
+  @media (prefers-color-scheme: dark) {
+    .thumb-light { display: none; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 48px 24px 64px;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 40px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 5px 14px;
+    margin-bottom: 16px;
+  }
+  h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -.02em; }
+  h1 .accent { color: var(--brand); }
+  .sub { color: var(--muted); margin-top: 10px; font-size: 15px; line-height: 1.6; }
+  .stats {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+    margin-top: 18px; font-size: 13px; color: var(--muted);
+  }
+  .stats span {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  a.card {
+    display: block;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--shadow);
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  a.card:hover {
+    transform: translateY(-4px);
+    border-color: var(--brand);
+    background: var(--panel-hover);
+  }
+  .thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .thumb img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: top center;
+  }
+  .num {
+    position: absolute; top: 10px; left: 10px; z-index: 2;
+    background: rgba(0,0,0,.65); color: #fff;
+    font-size: 12px; font-weight: 700;
+    width: 26px; height: 26px; border-radius: 8px;
+    display: grid; place-items: center;
+    backdrop-filter: blur(4px);
+  }
+  .body { padding: 16px 18px 18px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .body h2 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+  .badge {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+    border-radius: 999px;
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+  .body p { margin-top: 8px; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+  .open {
+    margin-top: 14px; font-size: 13px; font-weight: 700; color: var(--gold);
+    display: flex; align-items: center; gap: 6px;
+  }
+  a.card:hover .open { gap: 10px; }
+  .open::after { content: "\2192"; transition: transform .15s ease; }
+  footer {
+    margin-top: 44px; text-align: center;
+    color: var(--muted); font-size: 13px; line-height: 1.7;
+  }
+  footer code {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px 7px; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">UnderstsndThisProject</div>
+    <h1>MunimJi <span class="accent">Diagram Index</span></h1>
+    <p class="sub">Seven interactive diagrams for the inventory + GST billing app —
+       open any card to explore it full-screen with dark/light themes and export tools.</p>
+    <div class="stats">
+      <span>7 diagrams</span>
+      <span>9/9 showcase checks each</span>
+      <span>visual-checked at 1440–2048px</span>
+      <span>works offline</span>
+    </div>
+  </header>
+
+  <main class="grid">
+    <a class="card" href="SystemArchitecture.html">
+      <div class="thumb"><span class="num">1</span>
+        <img class="thumb-dark"  src="SystemArchitecture.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="SystemArchitecture.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Runtime System Architecture</h2><span class="badge">architecture</span></div>
+        <p>How the app runs: client tab + Vite dev server, Spring Boot jar on :8080 (Tomcat threads → JWT filter → controllers → services → JPA → HikariCP), in-process OpenPDF, trust boundaries.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="HLD.html">
+      <div class="thumb"><span class="num">2</span>
+        <img class="thumb-dark"  src="HLD.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="HLD.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>High-Level Design</h2><span class="badge">architecture</span></div>
+        <p>Nine components with ownership boundaries — auth, billing, stock, dashboard and reporting modules and their dependencies.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="LLD.html">
+      <div class="thumb"><span class="num">3</span>
+        <img class="thumb-dark"  src="LLD.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="LLD.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Low-Level Design</h2><span class="badge">architecture</span></div>
+        <p>Class-level design in three tiers: controllers, services, repositories, DTOs and entity relationships.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="BillingSequence.html">
+      <div class="thumb"><span class="num">4</span>
+        <img class="thumb-dark"  src="BillingSequence.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="BillingSequence.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Billing Sequence</h2><span class="badge">sequence</span></div>
+        <p>Bill creation call sequence across 7 participants: login, item scan, FEFO check, GST computation, persistence, PDF and stock deduction.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="BillingWorkflow.html">
+      <div class="thumb"><span class="num">5</span>
+        <img class="thumb-dark"  src="BillingWorkflow.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="BillingWorkflow.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Billing Workflow</h2><span class="badge">workflow</span></div>
+        <p>Bill states across UI and service lanes: draft → submit → validate → FEFO allocation → commit, with failure and retry paths.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="StockDataflow.html">
+      <div class="thumb"><span class="num">6</span>
+        <img class="thumb-dark"  src="StockDataflow.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="StockDataflow.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Stock Dataflow</h2><span class="badge">dataflow</span></div>
+        <p>Stock pipeline through 5 stages: inputs (purchases, billing, adjustments) → batch store → queries → dashboard alerts → reporting.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+
+    <a class="card" href="StockBatchLifecycle.html">
+      <div class="thumb"><span class="num">7</span>
+        <img class="thumb-dark"  src="StockBatchLifecycle.visual-check.1440x900.dark.png"  alt="">
+        <img class="thumb-light" src="StockBatchLifecycle.visual-check.1440x900.light.png" alt="">
+      </div>
+      <div class="body">
+        <div class="row"><h2>Stock Batch Lifecycle</h2><span class="badge">lifecycle</span></div>
+        <p>Batch lifecycle across three lanes: created → active → depleted, with low / expiring / expired alert states and their guards.</p>
+        <div class="open">Open diagram</div>
+      </div>
+    </a>
+  </main>
+
+  <footer>
+    Each diagram ships as a <code>.json</code> source + standalone <code>.html</code> deliverable,
+    validated with the archify skill.<br>
+    Thumbnails are the visual-check screenshots rendered at 1440×900.
+  </footer>
+</div>
+</body>
+</html>

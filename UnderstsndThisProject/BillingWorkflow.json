@@ -1,0 +1,270 @@
+{
+    "schema_version":  2,
+    "diagram_type":  "workflow",
+    "meta":  {
+                 "title":  "MunimJi Billing Workflow",
+                 "subtitle":  "From draft bill to committed stock movement",
+                 "output":  "BillingWorkflow.html",
+                 "animation":  "trace",
+                 "visual_preset":  "signal-flow",
+                 "quality_profile":  "showcase",
+                 "views":  [
+                               {
+                                   "id":  "draft-and-validate",
+                                   "label":  "Draft and validate",
+                                   "focus":  [
+                                                 "draft",
+                                                 "submit",
+                                                 "validate",
+                                                 "gate"
+                                             ],
+                                   "note":  "Every line is checked before a batch is touched."
+                               },
+                               {
+                                   "id":  "allocate-and-commit",
+                                   "label":  "Allocate and commit",
+                                   "focus":  [
+                                                 "gate",
+                                                 "allocate",
+                                                 "assign",
+                                                 "commit",
+                                                 "saved"
+                                             ],
+                                   "note":  "FEFO deduction, invoice number, and commit happen in one transaction."
+                               },
+                               {
+                                   "id":  "failure-paths",
+                                   "label":  "Failure paths",
+                                   "focus":  [
+                                                 "validate",
+                                                 "gate",
+                                                 "fail",
+                                                 "draft"
+                                             ],
+                                   "note":  "Any problem returns a {status, message} ApiError and saves nothing."
+                               }
+                           ],
+                 "viewBox":  [
+                                 930,
+                                 408
+                             ]
+             },
+    "lanes":  [
+                  {
+                      "id":  "ui",
+                      "label":  "Billing UI + ApiError"
+                  },
+                  {
+                      "id":  "service",
+                      "label":  "Service + Database"
+                  }
+              ],
+    "phases":  [
+                   {
+                       "id":  "draft",
+                       "label":  "Draft",
+                       "fromCol":  0,
+                       "toCol":  1
+                   },
+                   {
+                       "id":  "allocate",
+                       "label":  "Validate + allocate",
+                       "fromCol":  2,
+                       "toCol":  3,
+                       "variant":  "emphasis"
+                   },
+                   {
+                       "id":  "commit",
+                       "label":  "Commit",
+                       "fromCol":  4,
+                       "toCol":  5
+                   }
+               ],
+    "mainPath":  [
+                     "draft",
+                     "submit",
+                     "validate",
+                     "gate",
+                     "allocate",
+                     "assign",
+                     "commit",
+                     "saved"
+                 ],
+    "nodes":  [
+                  {
+                      "id":  "draft",
+                      "lane":  "ui",
+                      "col":  0,
+                      "type":  "frontend",
+                      "label":  "Draft Bill",
+                      "sublabel":  "lines + discount"
+                  },
+                  {
+                      "id":  "submit",
+                      "lane":  "ui",
+                      "col":  1,
+                      "type":  "frontend",
+                      "label":  "Submit Bill",
+                      "sublabel":  "POST /api/invoices"
+                  },
+                  {
+                      "id":  "validate",
+                      "lane":  "service",
+                      "col":  1,
+                      "type":  "backend",
+                      "label":  "Validate Lines",
+                      "sublabel":  "qty \u003e 0, price set",
+                      "tag":  "DTO checks"
+                  },
+                  {
+                      "id":  "gate",
+                      "lane":  "service",
+                      "col":  2,
+                      "type":  "backend",
+                      "label":  "Stock Enough?",
+                      "sublabel":  "FEFO total vs need",
+                      "tag":  "gate"
+                  },
+                  {
+                      "id":  "allocate",
+                      "lane":  "service",
+                      "col":  3,
+                      "type":  "database",
+                      "label":  "Deduct Batches",
+                      "sublabel":  "earliest expiry first"
+                  },
+                  {
+                      "id":  "assign",
+                      "lane":  "service",
+                      "col":  4,
+                      "type":  "backend",
+                      "label":  "Assign Number",
+                      "sublabel":  "INV-YYYY-NNNN"
+                  },
+                  {
+                      "id":  "commit",
+                      "lane":  "service",
+                      "col":  5,
+                      "type":  "database",
+                      "label":  "Commit Bill",
+                      "sublabel":  "invoice + lines + stock"
+                  },
+                  {
+                      "id":  "saved",
+                      "lane":  "ui",
+                      "col":  5,
+                      "type":  "frontend",
+                      "label":  "Bill Saved",
+                      "sublabel":  "toast + refetch"
+                  },
+                  {
+                      "id":  "fail",
+                      "lane":  "ui",
+                      "col":  3,
+                      "type":  "external",
+                      "label":  "400 / 409 ApiError",
+                      "sublabel":  "status + message",
+                      "width":  132
+                  }
+              ],
+    "edges":  [
+                  {
+                      "from":  "draft",
+                      "to":  "submit",
+                      "role":  "main",
+                      "variant":  "emphasis"
+                  },
+                  {
+                      "from":  "submit",
+                      "to":  "validate",
+                      "role":  "main",
+                      "variant":  "emphasis",
+                      "route":  "drop",
+                      "fromSide":  "bottom",
+                      "toSide":  "top"
+                  },
+                  {
+                      "from":  "validate",
+                      "to":  "gate",
+                      "role":  "main",
+                      "variant":  "emphasis"
+                  },
+                  {
+                      "from":  "gate",
+                      "to":  "allocate",
+                      "role":  "main",
+                      "variant":  "emphasis"
+                  },
+                  {
+                      "from":  "allocate",
+                      "to":  "assign",
+                      "role":  "main"
+                  },
+                  {
+                      "from":  "assign",
+                      "to":  "commit",
+                      "role":  "main"
+                  },
+                  {
+                      "from":  "commit",
+                      "to":  "saved",
+                      "role":  "main",
+                      "variant":  "emphasis",
+                      "route":  "auto",
+                      "fromSide":  "top",
+                      "toSide":  "bottom"
+                  },
+                  {
+                      "from":  "validate",
+                      "to":  "fail",
+                      "label":  "invalid line",
+                      "role":  "error",
+                      "route":  "auto",
+                      "fromSide":  "top",
+                      "toSide":  "bottom"
+                  },
+                  {
+                      "from":  "gate",
+                      "to":  "fail",
+                      "label":  "shortage",
+                      "role":  "error",
+                      "route":  "auto"
+                  },
+                  {
+                      "from":  "fail",
+                      "to":  "submit",
+                      "label":  "fix and retry",
+                      "role":  "return",
+                      "variant":  "dashed"
+                  }
+              ],
+    "cards":  [
+                  {
+                      "dot":  "emerald",
+                      "title":  "Happy path",
+                      "items":  [
+                                    "Submit reaches the service only after JWT checks pass",
+                                    "FEFO deducts the batches that expire first",
+                                    "Number, lines, and stock commit together"
+                                ]
+                  },
+                  {
+                      "dot":  "rose",
+                      "title":  "Failure equals nothing saved",
+                      "items":  [
+                                    "Bad line quantities fail validation before any write",
+                                    "A shortage throws inside the transaction",
+                                    "The client always gets {status, message}"
+                                ]
+                  },
+                  {
+                      "dot":  "cyan",
+                      "title":  "Retry loop",
+                      "items":  [
+                                    "The ApiError lands back on the draft bill",
+                                    "Nothing was persisted, so editing is safe",
+                                    "Resubmit runs the exact same checks"
+                                ]
+                  }
+              ]
+}

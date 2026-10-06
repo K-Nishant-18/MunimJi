@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MunimJi Runtime System Architecture",
+    "subtitle": "How the app runs: processes, ports, threads and pools",
+    "output": "SystemArchitecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1200,
+      600
+    ],
+    "views": [
+      {
+        "id": "request-lifecycle",
+        "label": "Request lifecycle",
+        "focus": [
+          "browser",
+          "tomcat",
+          "filter",
+          "api",
+          "svc",
+          "repo",
+          "hikari",
+          "db"
+        ],
+        "note": "Every API call travels eight hops: tab, worker thread, JWT check, controllers, services, JPA, pool, SQL."
+      },
+      {
+        "id": "dev-vs-prod",
+        "label": "Dev vs prod runtime",
+        "focus": [
+          "browser",
+          "vite",
+          "tomcat",
+          "db"
+        ],
+        "note": "Vite serves the UI and proxies /api in dev; in prod one jar serves the built UI and the API."
+      },
+      {
+        "id": "billing-transaction",
+        "label": "Billing transaction",
+        "focus": [
+          "svc",
+          "pdf",
+          "repo",
+          "hikari",
+          "db"
+        ],
+        "note": "One @Transactional boundary: GST and FEFO commit to SQL, then OpenPDF renders the invoice bytes."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "frontend",
+      "label": "React SPA",
+      "sublabel": "axios + React Router",
+      "tag": "client",
+      "pos": [
+        40,
+        150
+      ],
+      "size": [
+        150,
+        66
+      ]
+    },
+    {
+      "id": "tomcat",
+      "type": "backend",
+      "label": "Embedded Tomcat",
+      "sublabel": "HTTP worker threads",
+      "tag": "port 8080",
+      "pos": [
+        270,
+        150
+      ],
+      "size": [
+        165,
+        66
+      ]
+    },
+    {
+      "id": "filter",
+      "type": "security",
+      "label": "JWT Filter Chain",
+      "sublabel": "JwtAuthFilter + BCrypt",
+      "tag": "stateless",
+      "pos": [
+        500,
+        150
+      ],
+      "size": [
+        175,
+        66
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "9 REST Controllers",
+      "sublabel": "DTO in / DTO out",
+      "pos": [
+        730,
+        150
+      ],
+      "size": [
+        165,
+        66
+      ]
+    },
+    {
+      "id": "svc",
+      "type": "backend",
+      "label": "Service Layer",
+      "sublabel": "GST, FEFO, invoice no.",
+      "tag": "@Transactional",
+      "pos": [
+        960,
+        150
+      ],
+      "size": [
+        175,
+        66
+      ]
+    },
+    {
+      "id": "vite",
+      "type": "frontend",
+      "label": "Vite Dev Server",
+      "sublabel": "HMR + /api proxy",
+      "tag": "dev :5173",
+      "pos": [
+        40,
+        310
+      ],
+      "size": [
+        150,
+        66
+      ]
+    },
+    {
+      "id": "pdf",
+      "type": "external",
+      "label": "OpenPDF Engine",
+      "sublabel": "invoice byte[]",
+      "tag": "in-process",
+      "pos": [
+        730,
+        310
+      ],
+      "size": [
+        165,
+        66
+      ]
+    },
+    {
+      "id": "repo",
+      "type": "backend",
+      "label": "Spring Data JPA",
+      "sublabel": "repositories",
+      "pos": [
+        960,
+        310
+      ],
+      "size": [
+        175,
+        66
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "H2 / MySQL",
+      "sublabel": "9 tables, DECIMAL(19,2)",
+      "pos": [
+        40,
+        470
+      ],
+      "size": [
+        165,
+        66
+      ]
+    },
+    {
+      "id": "hikari",
+      "type": "backend",
+      "label": "HikariCP Pool",
+      "sublabel": "pooled SQL connections",
+      "pos": [
+        960,
+        470
+      ],
+      "size": [
+        175,
+        66
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Client runtime — tab + dev tooling",
+      "wraps": [
+        "browser",
+        "vite"
+      ],
+      "pad": 20
+    },
+    {
+      "kind": "security-group",
+      "label": "Spring Boot jar — one JVM process, port 8080",
+      "wraps": [
+        "tomcat",
+        "filter",
+        "api",
+        "svc",
+        "pdf",
+        "repo",
+        "hikari"
+      ],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "browser-to-tomcat",
+      "from": "browser",
+      "to": "tomcat",
+      "label": "HTTP JSON + Bearer",
+      "variant": "emphasis",
+      "labelAt": [
+        235,
+        245
+      ]
+    },
+    {
+      "id": "tomcat-to-filter",
+      "from": "tomcat",
+      "to": "filter",
+      "label": "worker thread",
+      "variant": "security",
+      "labelAt": [
+        467,
+        245
+      ]
+    },
+    {
+      "id": "filter-to-api",
+      "from": "filter",
+      "to": "api",
+      "label": "identity proved",
+      "variant": "security",
+      "labelAt": [
+        702,
+        245
+      ]
+    },
+    {
+      "id": "api-to-svc",
+      "from": "api",
+      "to": "svc",
+      "label": "DTO in / DTO out",
+      "labelAt": [
+        927,
+        266
+      ]
+    },
+    {
+      "id": "svc-to-repo",
+      "from": "svc",
+      "to": "repo",
+      "label": "JPQL",
+      "labelAt": [
+        1047,
+        266
+      ]
+    },
+    {
+      "id": "repo-to-hikari",
+      "from": "repo",
+      "to": "hikari",
+      "label": "pool checkout",
+      "labelAt": [
+        1047,
+        423
+      ]
+    },
+    {
+      "id": "hikari-to-db",
+      "from": "hikari",
+      "to": "db",
+      "label": "SQL",
+      "labelAt": [
+        582,
+        503
+      ]
+    },
+    {
+      "id": "svc-to-pdf",
+      "from": "svc",
+      "to": "pdf",
+      "label": "render invoice",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          1047.5,
+          250
+        ],
+        [
+          812.5,
+          250
+        ]
+      ],
+      "labelAt": [
+        790,
+        290
+      ]
+    },
+    {
+      "id": "vite-to-tomcat",
+      "from": "vite",
+      "to": "tomcat",
+      "label": "proxy /api (dev)",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "via": [
+        [
+          352.5,
+          343
+        ]
+      ],
+      "labelAt": [
+        370,
+        300
+      ]
+    },
+    {
+      "id": "vite-to-browser",
+      "from": "vite",
+      "to": "browser",
+      "label": "bundle + HMR",
+      "variant": "dashed",
+      "labelAt": [
+        115,
+        255
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Two processes",
+      "items": [
+        "Dev: Vite :5173 serves the UI and proxies /api to :8080",
+        "Prod: one jar serves the built UI and the API from :8080"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Inside the jar",
+      "items": [
+        "Tomcat threads run JWT filter, controllers, services, JPA in one JVM",
+        "HikariCP pools SQL connections; OpenPDF renders without a network hop"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Trust boundary",
+      "items": [
+        "Stateless JWT (HS256, 24 h) is checked before any controller runs",
+        "The database is reachable only through the pooled connections"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MunimJi High-Level Design (HLD)",
+    "output": "HLD.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-path",
+        "label": "Main path",
+        "focus": [
+          "spa",
+          "security",
+          "billing",
+          "repo",
+          "db"
+        ],
+        "note": "A bill travels from the browser through security and billing to durable storage."
+      },
+      {
+        "id": "modules",
+        "label": "Business modules",
+        "focus": [
+          "security",
+          "billing",
+          "inventory",
+          "reporting"
+        ],
+        "note": "Four subsystems share one filter chain and one service layer."
+      },
+      {
+        "id": "data-and-config",
+        "label": "Data and config",
+        "focus": [
+          "config",
+          "repo",
+          "db",
+          "pdf"
+        ],
+        "note": "Environment-driven configuration, one database, in-process PDF engine."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "React SPA",
+      "sublabel": "10 pages, Tailwind UI",
+      "tag": "browser :5173",
+      "pos": [
+        40,
+        265
+      ],
+      "size": [
+        155,
+        66
+      ]
+    },
+    {
+      "id": "config",
+      "type": "external",
+      "label": "Environment Config",
+      "sublabel": "DB_*, JWT_SECRET, SHOP_*",
+      "pos": [
+        40,
+        130
+      ],
+      "size": [
+        155,
+        66
+      ]
+    },
+    {
+      "id": "security",
+      "type": "security",
+      "label": "Security Subsystem",
+      "sublabel": "Spring Security + JWT filter",
+      "tag": "OWNER / STAFF",
+      "pos": [
+        255,
+        140
+      ],
+      "size": [
+        185,
+        66
+      ]
+    },
+    {
+      "id": "billing",
+      "type": "backend",
+      "label": "Billing Module",
+      "sublabel": "GST split, FEFO, INV-YYYY-NNNN",
+      "tag": "@Transactional",
+      "pos": [
+        520,
+        140
+      ],
+      "size": [
+        190,
+        66
+      ]
+    },
+    {
+      "id": "inventory",
+      "type": "backend",
+      "label": "Inventory Module",
+      "sublabel": "products, batches, alerts",
+      "pos": [
+        520,
+        270
+      ],
+      "size": [
+        190,
+        66
+      ]
+    },
+    {
+      "id": "reporting",
+      "type": "backend",
+      "label": "Reporting Module",
+      "sublabel": "summary, monthly, GST",
+      "pos": [
+        520,
+        400
+      ],
+      "size": [
+        190,
+        66
+      ]
+    },
+    {
+      "id": "pdf",
+      "type": "external",
+      "label": "OpenPDF Engine",
+      "sublabel": "invoice byte[]",
+      "pos": [
+        785,
+        140
+      ],
+      "size": [
+        165,
+        66
+      ]
+    },
+    {
+      "id": "repo",
+      "type": "backend",
+      "label": "Spring Data Repos",
+      "sublabel": "9 repositories, JPQL",
+      "pos": [
+        785,
+        270
+      ],
+      "size": [
+        165,
+        66
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "H2 / MySQL",
+      "sublabel": "DECIMAL(19,2), @Version",
+      "pos": [
+        1030,
+        270
+      ],
+      "size": [
+        160,
+        66
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "Spring Boot jar, port 8080",
+      "wraps": [
+        "security",
+        "billing",
+        "inventory",
+        "reporting",
+        "pdf",
+        "repo"
+      ],
+      "pad": 22
+    }
+  ],
+  "connections": [
+    {
+      "id": "spa-to-security",
+      "from": "spa",
+      "to": "security",
+      "label": "login + JSON APIs",
+      "variant": "emphasis"
+    },
+    {
+      "id": "config-to-security",
+      "from": "config",
+      "to": "security",
+      "label": "JWT_SECRET",
+      "variant": "dashed"
+    },
+    {
+      "id": "security-to-billing",
+      "from": "security",
+      "to": "billing",
+      "label": "authorized"
+    },
+    {
+      "id": "security-to-inventory",
+      "from": "security",
+      "to": "inventory",
+      "label": "STAFF read",
+      "labelAt": [
+        444,
+        240
+      ]
+    },
+    {
+      "id": "security-to-reporting",
+      "from": "security",
+      "to": "reporting",
+      "label": "OWNER only",
+      "labelAt": [
+        500,
+        370
+      ]
+    },
+    {
+      "id": "billing-to-pdf",
+      "from": "billing",
+      "to": "pdf",
+      "label": "render invoice",
+      "variant": "dashed"
+    },
+    {
+      "id": "billing-to-repo",
+      "from": "billing",
+      "to": "repo",
+      "label": "FEFO + save"
+    },
+    {
+      "id": "inventory-to-repo",
+      "from": "inventory",
+      "to": "repo",
+      "label": "JPQL",
+      "labelAt": [
+        727,
+        303
+      ]
+    },
+    {
+      "id": "reporting-to-repo",
+      "from": "reporting",
+      "to": "repo",
+      "label": "invoice queries"
+    },
+    {
+      "id": "repo-to-db",
+      "from": "repo",
+      "to": "db",
+      "label": "HikariCP pool",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Modules",
+      "items": [
+        "Billing: GST split, discount share, FEFO deduction, invoice number",
+        "Inventory: products, stock batches, low / expiring alerts",
+        "Reporting: summary, monthly sales, top products, GST summary"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Data and config",
+      "items": [
+        "Schema from Hibernate ddl-auto=update, idempotent data.sql seed",
+        "All knobs come from env vars: DB_*, JWT_SECRET, SEED_MODE, SHOP_*"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Key design decisions",
+      "items": [
+        "Stateless JWT sessions instead of server sessions",
+        "BigDecimal(19,2) money rounded HALF_UP in one utility",
+        "One database transaction per bill with automatic rollback"
+      ]
+    }
+  ]
+}

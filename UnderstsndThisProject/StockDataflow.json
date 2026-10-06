@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "MunimJi Stock Data Flow",
+    "subtitle": "Purchase in, FEFO out, reports downstream",
+    "output": "StockDataflow.html",
+    "viewBox": [
+      1080,
+      530
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "stock-in",
+        "label": "Stock enters",
+        "focus": [
+          "purchase",
+          "batch",
+          "product"
+        ],
+        "note": "Purchases land as batches with quantity and expiry."
+      },
+      {
+        "id": "stock-out",
+        "label": "Stock leaves (FEFO)",
+        "focus": [
+          "batch",
+          "invoice_svc",
+          "invoice",
+          "product"
+        ],
+        "note": "Billing consumes the soonest-expiring stock first."
+      },
+      {
+        "id": "downstream",
+        "label": "Downstream readers",
+        "focus": [
+          "invoice",
+          "reports",
+          "pdf",
+          "alerts",
+          "ui"
+        ],
+        "note": "Alerts, reports, and PDFs read stored rows, never live memory."
+      }
+    ]
+  },
+  "stages": [
+    {
+      "label": "Stock In"
+    },
+    {
+      "label": "Stock Store"
+    },
+    {
+      "label": "Billing Engine"
+    },
+    {
+      "label": "Records"
+    },
+    {
+      "label": "Consumers"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "purchase",
+      "type": "backend",
+      "label": "Stock Purchase",
+      "sublabel": "POST /api/stock/purchase",
+      "stage": 0,
+      "row": 0,
+      "tag": "creates batch"
+    },
+    {
+      "id": "batch",
+      "type": "database",
+      "label": "Stock Batches",
+      "sublabel": "qty + expiry, @Version",
+      "stage": 1,
+      "row": 0,
+      "tag": "source of truth"
+    },
+    {
+      "id": "product",
+      "type": "database",
+      "label": "Products",
+      "sublabel": "price, GST, reorder",
+      "stage": 1,
+      "row": 2
+    },
+    {
+      "id": "invoice_svc",
+      "type": "backend",
+      "label": "InvoiceService",
+      "sublabel": "FEFO deduction",
+      "stage": 2,
+      "row": 0,
+      "tag": "@Transactional"
+    },
+    {
+      "id": "alerts",
+      "type": "backend",
+      "label": "Alerts",
+      "sublabel": "low stock + expiring",
+      "stage": 2,
+      "row": 2
+    },
+    {
+      "id": "invoice",
+      "type": "database",
+      "label": "Invoice + Lines",
+      "sublabel": "GST split, totals",
+      "stage": 3,
+      "row": 0,
+      "tag": "immutable rows"
+    },
+    {
+      "id": "reports",
+      "type": "backend",
+      "label": "Reports",
+      "sublabel": "summary, GST, top",
+      "stage": 4,
+      "row": 0
+    },
+    {
+      "id": "ui",
+      "type": "frontend",
+      "label": "Billing UI",
+      "sublabel": "alerts + refetch",
+      "stage": 4,
+      "row": 2
+    },
+    {
+      "id": "pdf",
+      "type": "external",
+      "label": "PDF Download",
+      "sublabel": "GET /invoices/{id}/pdf",
+      "stage": 4,
+      "row": 1
+    }
+  ],
+  "flows": [
+    {
+      "from": "purchase",
+      "to": "batch",
+      "label": "GRN write",
+      "classification": "batch + expiry",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "from": "batch",
+      "to": "invoice_svc",
+      "label": "expiry asc pick",
+      "classification": "FEFO",
+      "variant": "emphasis",
+      "route": "straight",
+      "labelAt": [
+        422,
+        130
+      ]
+    },
+    {
+      "from": "product",
+      "to": "invoice_svc",
+      "label": "price + GST",
+      "classification": "line math",
+      "variant": "default",
+      "route": "straight",
+      "via": [
+        [
+          420,
+          385
+        ],
+        [
+          420,
+          157
+        ]
+      ]
+    },
+    {
+      "from": "invoice_svc",
+      "to": "invoice",
+      "label": "lines + totals",
+      "classification": "one transaction",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "from": "batch",
+      "to": "alerts",
+      "label": "qty + expiry",
+      "classification": "threshold scan",
+      "variant": "default",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "labelAt": [
+        400,
+        440
+      ],
+      "via": [
+        [
+          315,
+          300
+        ],
+        [
+          200,
+          300
+        ],
+        [
+          200,
+          440
+        ],
+        [
+          530,
+          440
+        ]
+      ]
+    },
+    {
+      "from": "alerts",
+      "to": "ui",
+      "label": "low / expiring lists",
+      "classification": "read model",
+      "variant": "default",
+      "route": "vertical-channel",
+      "labelDx": -30
+    },
+    {
+      "from": "invoice",
+      "to": "reports",
+      "label": "aggregate queries",
+      "classification": "JPQL",
+      "variant": "default",
+      "route": "straight",
+      "labelAt": [
+        850,
+        124
+      ]
+    },
+    {
+      "from": "invoice",
+      "to": "pdf",
+      "label": "stored lines",
+      "classification": "re-render on demand",
+      "variant": "dashed",
+      "route": "bottom-channel"
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "MunimJi Stock Batch Lifecycle",
+    "subtitle": "Created by a purchase, drained by FEFO sales, ended by time",
+    "output": "StockBatchLifecycle.html",
+    "viewBox": [
+      1070,
+      566
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-life",
+        "label": "Batch life",
+        "focus": [
+          "created",
+          "active",
+          "gate",
+          "depleted"
+        ],
+        "note": "A batch is born from a purchase and dies when its quantity hits zero."
+      },
+      {
+        "id": "alert-flags",
+        "label": "Alert flags",
+        "focus": [
+          "active",
+          "low",
+          "expiring"
+        ],
+        "note": "Low stock and near-expiry are derived checks, not stored columns."
+      },
+      {
+        "id": "time-exit",
+        "label": "Time-based exit",
+        "focus": [
+          "expiring",
+          "expired"
+        ],
+        "note": "Passing expiresAt moves the batch out of the sellable pool."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Batch life"
+    },
+    {
+      "id": "watch",
+      "label": "Alert flags (derived)"
+    },
+    {
+      "id": "terminal",
+      "label": "Time-based exit"
+    }
+  ],
+  "states": [
+    {
+      "id": "created",
+      "type": "start",
+      "label": "Created",
+      "sublabel": "purchase writes row",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "qty + expiry"
+    },
+    {
+      "id": "active",
+      "type": "active",
+      "label": "Active",
+      "sublabel": "qty > 0",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "FEFO pool"
+    },
+    {
+      "id": "gate",
+      "type": "decision",
+      "label": "Qty Left?",
+      "sublabel": "after each sale",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "check"
+    },
+    {
+      "id": "depleted",
+      "type": "success",
+      "label": "Depleted",
+      "sublabel": "qty = 0",
+      "lane": "main",
+      "col": 4,
+      "step": "04",
+      "tag": "closed"
+    },
+    {
+      "id": "low",
+      "type": "neutral",
+      "label": "Low Stock",
+      "sublabel": "at or below reorder",
+      "lane": "watch",
+      "col": 1,
+      "tag": "alert"
+    },
+    {
+      "id": "expiring",
+      "type": "waiting",
+      "label": "Expiring Soon",
+      "sublabel": "near expiresAt",
+      "lane": "watch",
+      "col": 2,
+      "tag": "alert"
+    },
+    {
+      "id": "expired",
+      "type": "failure",
+      "label": "Expired",
+      "sublabel": "past expiry, not sellable",
+      "lane": "terminal",
+      "col": 2,
+      "tag": "flagged",
+      "yOffset": -70
+    }
+  ],
+  "transitions": [
+    {
+      "id": "create-activate",
+      "from": "created",
+      "to": "active",
+      "label": "committed",
+      "variant": "emphasis",
+      "route": "straight",
+      "labelAt": [
+        210,
+        202
+      ]
+    },
+    {
+      "id": "sale-pick",
+      "from": "active",
+      "to": "gate",
+      "label": "FEFO sale decrements",
+      "variant": "emphasis",
+      "route": "straight",
+      "labelAt": [
+        325,
+        212
+      ]
+    },
+    {
+      "id": "drain-out",
+      "from": "gate",
+      "to": "depleted",
+      "label": "qty hits 0",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "partial-remains",
+      "from": "gate",
+      "to": "active",
+      "label": "qty remains",
+      "variant": "dashed",
+      "route": "top-channel"
+    },
+    {
+      "id": "crosses-reorder",
+      "from": "active",
+      "to": "low",
+      "label": "qty <= reorder",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          248,
+          240
+        ],
+        [
+          556,
+          240
+        ]
+      ],
+      "labelAt": [
+        400,
+        240
+      ]
+    },
+    {
+      "id": "near-expiry",
+      "from": "active",
+      "to": "expiring",
+      "label": "near expiresAt",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          248,
+          225
+        ],
+        [
+          710,
+          225
+        ]
+      ],
+      "labelAt": [
+        620,
+        225
+      ]
+    },
+    {
+      "id": "date-passes",
+      "from": "expiring",
+      "to": "expired",
+      "label": "date passes",
+      "variant": "security",
+      "route": "straight",
+      "labelAt": [
+        710,
+        350
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Main life",
+      "items": [
+        "Purchase creates the batch with quantity and expiry",
+        "Every FEFO sale decrements it inside the bill transaction"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Alert flags",
+      "items": [
+        "Low stock and near-expiry are queries, not columns",
+        "They appear on the alerts page and never block sales"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Time exit",
+      "items": [
+        "FEFO query requires expiryDate >= today",
+        "Expired rows stay for history, not deleted"
+      ]
+    }
+  ]
+}

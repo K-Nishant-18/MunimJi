@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MunimJi Low-Level Design (LLD)",
+    "output": "LLD.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-path",
+        "label": "Request path",
+        "focus": [
+          "pages",
+          "api",
+          "auth",
+          "controllers",
+          "services",
+          "repositories"
+        ],
+        "note": "One HTTP request flows page to repository in five hops."
+      },
+      {
+        "id": "backend",
+        "label": "Backend packages",
+        "focus": [
+          "auth",
+          "controllers",
+          "services",
+          "repositories",
+          "entities",
+          "pdf"
+        ],
+        "note": "Layered packages: controller to service to repository, entities at the bottom."
+      },
+      {
+        "id": "frontend",
+        "label": "Frontend packages",
+        "focus": [
+          "pages",
+          "api"
+        ],
+        "note": "Pages never call fetch directly; authFetch wraps every request."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "pages",
+      "type": "frontend",
+      "label": "src/pages",
+      "sublabel": "10 page components",
+      "tag": "lazy routes",
+      "pos": [
+        40,
+        262
+      ],
+      "size": [
+        170,
+        66
+      ]
+    },
+    {
+      "id": "api",
+      "type": "frontend",
+      "label": "src/api",
+      "sublabel": "authFetch wrapper",
+      "tag": "axios + JWT",
+      "pos": [
+        270,
+        262
+      ],
+      "size": [
+        170,
+        66
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Security Layer",
+      "sublabel": "JwtAuthFilter, JwtService",
+      "tag": "SecurityConfig",
+      "pos": [
+        505,
+        132
+      ],
+      "size": [
+        185,
+        66
+      ]
+    },
+    {
+      "id": "controllers",
+      "type": "backend",
+      "label": "Controllers",
+      "sublabel": "8 REST controllers",
+      "tag": "@RestController",
+      "pos": [
+        750,
+        132
+      ],
+      "size": [
+        195,
+        66
+      ]
+    },
+    {
+      "id": "services",
+      "type": "backend",
+      "label": "Services",
+      "sublabel": "InvoiceService, StockService...",
+      "tag": "@Transactional",
+      "pos": [
+        750,
+        262
+      ],
+      "size": [
+        195,
+        66
+      ]
+    },
+    {
+      "id": "repositories",
+      "type": "backend",
+      "label": "Repositories",
+      "sublabel": "9 JpaRepository interfaces",
+      "pos": [
+        480,
+        262
+      ],
+      "size": [
+        185,
+        66
+      ]
+    },
+    {
+      "id": "entities",
+      "type": "database",
+      "label": "Entities",
+      "sublabel": "10 @Entity classes",
+      "tag": "@Version, DECIMAL",
+      "pos": [
+        480,
+        360
+      ],
+      "size": [
+        185,
+        66
+      ]
+    },
+    {
+      "id": "pdf",
+      "type": "external",
+      "label": "PdfService",
+      "sublabel": "OpenPDF build",
+      "pos": [
+        750,
+        360
+      ],
+      "size": [
+        195,
+        66
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "Spring Boot backend, src/main/java",
+      "wraps": [
+        "auth",
+        "controllers",
+        "services",
+        "repositories",
+        "entities",
+        "pdf"
+      ],
+      "pad": 20
+    }
+  ],
+  "connections": [
+    {
+      "id": "pages-to-api",
+      "from": "pages",
+      "to": "api",
+      "label": "axios calls",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api-to-auth",
+      "from": "api",
+      "to": "auth",
+      "label": "Bearer token"
+    },
+    {
+      "id": "auth-to-controllers",
+      "from": "auth",
+      "to": "controllers",
+      "label": "filter passes",
+      "variant": "emphasis",
+      "labelAt": [
+        720,
+        214
+      ]
+    },
+    {
+      "id": "controllers-to-services",
+      "from": "controllers",
+      "to": "services",
+      "label": "DTO mapping",
+      "variant": "emphasis",
+      "labelAt": [
+        847,
+        230
+      ]
+    },
+    {
+      "id": "services-to-repositories",
+      "from": "services",
+      "to": "repositories",
+      "label": "JPA calls",
+      "variant": "emphasis"
+    },
+    {
+      "id": "repositories-to-entities",
+      "from": "repositories",
+      "to": "entities",
+      "label": "entity rows",
+      "labelAt": [
+        572,
+        344
+      ]
+    },
+    {
+      "id": "services-to-pdf",
+      "from": "services",
+      "to": "pdf",
+      "label": "render invoice",
+      "variant": "dashed",
+      "labelAt": [
+        847,
+        344
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Backend call chain",
+      "items": [
+        "JwtAuthFilter runs before any controller; /api/auth/login and /api/health stay public",
+        "Controller validates the DTO, service owns business rules, repository owns queries",
+        "GlobalExceptionHandler maps exceptions to {status, message} ApiError"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Frontend call chain",
+      "items": [
+        "App boots AuthContext, token lives in localStorage, Layout renders shell + routes",
+        "authFetch attaches Authorization header; 401 clears session and redirects to login",
+        "Pages stay dumb: fetch, render, mutate, refetch"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Where to change what",
+      "items": [
+        "New endpoint: controller method plus DTO plus service method",
+        "New business rule: service method plus test under src/test/java",
+        "New screen: page component plus route line in App.jsx"
+      ]
+    }
+  ]
+}
