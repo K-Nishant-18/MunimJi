@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   Tag,
   Truck,
+  UserPlus,
   Warehouse,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -36,6 +37,10 @@ const groups = [
   {
     label: "Insights",
     links: [{ to: "/reports", label: "Reports", icon: BarChart3, ownerOnly: true }],
+  },
+  {
+    label: "Access",
+    links: [{ to: "/users", label: "Users & Access", icon: UserPlus, ownerOnly: true }],
   },
 ];
 

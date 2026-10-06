@@ -13,6 +13,7 @@ const titles = {
   "/suppliers": "Suppliers",
   "/purchases/new": "New Purchase",
   "/reports": "Reports",
+  "/users": "Users & Access",
 };
 
 export default function Navbar({ onMenuClick }) {

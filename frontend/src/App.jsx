@@ -12,6 +12,7 @@ import PurchaseNew from "./pages/PurchaseNew.jsx";
 import Reports from "./pages/Reports.jsx";
 import Stock from "./pages/Stock.jsx";
 import Suppliers from "./pages/Suppliers.jsx";
+import Users from "./pages/Users.jsx";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/purchases/new" element={<PurchaseNew />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/users" element={<Users />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
