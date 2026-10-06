@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "MunimJi Registration & Tenant Resolution",
+    "subtitle": "POST /auth/register, then every scoped request",
+    "output": "AuthSequence.html",
+    "viewBox": [
+      1080,
+      539
+    ],
+    "column_fit": "spread",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "register-shop",
+        "label": "Register a shop",
+        "focus": [
+          "user",
+          "app",
+          "api",
+          "svc",
+          "db"
+        ],
+        "note": "Anyone can open a new shop; the owner row is the first tenant row."
+      },
+      {
+        "id": "tenant-resolution",
+        "label": "Tenant resolution",
+        "focus": [
+          "app",
+          "api",
+          "jwt",
+          "ctx"
+        ],
+        "note": "The bearer token becomes a principal carrying userId and tenantId."
+      },
+      {
+        "id": "scoped-read",
+        "label": "Scoped read",
+        "focus": [
+          "api",
+          "ctx",
+          "svc",
+          "db"
+        ],
+        "note": "Services read CurrentTenant and the query returns only the caller's rows."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "Owner / Staff",
+      "sublabel": "browser"
+    },
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "React App",
+      "sublabel": "axios interceptor"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "REST API",
+      "sublabel": "Auth + controllers"
+    },
+    {
+      "id": "jwt",
+      "type": "security",
+      "label": "JWT Filter",
+      "sublabel": "JwtAuthFilter"
+    },
+    {
+      "id": "ctx",
+      "type": "security",
+      "label": "Tenant Context",
+      "sublabel": "CurrentTenant"
+    },
+    {
+      "id": "svc",
+      "type": "backend",
+      "label": "Service Layer",
+      "sublabel": "register + scoped reads"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Database",
+      "sublabel": "owner_id columns"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 342,
+      "label": "Register"
+    },
+    {
+      "from": 350,
+      "to": 470,
+      "label": "Authenticated, tenant-scoped request"
+    }
+  ],
+  "messages": [
+    {
+      "id": "open-register",
+      "from": "user",
+      "to": "app",
+      "y": 160,
+      "label": "open /register, submit shop",
+      "variant": "default"
+    },
+    {
+      "id": "post-register",
+      "from": "app",
+      "to": "api",
+      "y": 188,
+      "label": "POST /auth/register (no token)",
+      "variant": "emphasis",
+      "note": "axios omits Authorization header"
+    },
+    {
+      "id": "call-register",
+      "from": "api",
+      "to": "svc",
+      "y": 216,
+      "label": "register(dto)",
+      "variant": "default"
+    },
+    {
+      "id": "insert-owner",
+      "from": "svc",
+      "to": "db",
+      "y": 244,
+      "label": "insert owner row (owner_id NULL)",
+      "variant": "default"
+    },
+    {
+      "id": "owner-saved",
+      "from": "db",
+      "to": "svc",
+      "y": 272,
+      "label": "owner row saved",
+      "variant": "default"
+    },
+    {
+      "id": "register-token",
+      "from": "svc",
+      "to": "api",
+      "y": 300,
+      "label": "token + role OWNER",
+      "variant": "default"
+    },
+    {
+      "id": "created",
+      "from": "api",
+      "to": "app",
+      "y": 328,
+      "label": "201 Created, auto-login",
+      "variant": "emphasis"
+    },
+    {
+      "id": "fetch-products",
+      "from": "app",
+      "to": "api",
+      "y": 372,
+      "label": "GET /api/products + Bearer",
+      "variant": "emphasis"
+    },
+    {
+      "id": "set-principal",
+      "from": "jwt",
+      "to": "ctx",
+      "y": 400,
+      "label": "set AppUserDetails(userId, tenantId)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "scoped-query",
+      "from": "svc",
+      "to": "db",
+      "y": 428,
+      "label": "listProducts(): WHERE owner_id = tenantId",
+      "variant": "emphasis"
+    },
+    {
+      "id": "own-shop",
+      "from": "api",
+      "to": "app",
+      "y": 456,
+      "label": "200 OK, own shop data only",
+      "variant": "default"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "app",
+      "from": 156,
+      "to": 462,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 184,
+      "to": 462,
+      "type": "backend"
+    },
+    {
+      "participant": "svc",
+      "from": 212,
+      "to": 434,
+      "type": "backend"
+    },
+    {
+      "participant": "db",
+      "from": 240,
+      "to": 434,
+      "type": "database"
+    },
+    {
+      "participant": "jwt",
+      "from": 396,
+      "to": 406,
+      "type": "security"
+    },
+    {
+      "participant": "ctx",
+      "from": 396,
+      "to": 406,
+      "type": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Register rules",
+      "items": [
+        "Anonymous POST /auth/register creates an OWNER (201 + token)",
+        "An owner token may add STAFF only; a second OWNER gets 403",
+        "A STAFF token cannot create users (403)"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Tenant resolution",
+      "items": [
+        "Owner resolves to own user id, staff to the owner's id",
+        "JwtAuthFilter puts AppUserDetails into the SecurityContext",
+        "CurrentTenant throws 401 when the context is empty"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Isolation",
+      "items": [
+        "Every list, count and aggregate filters owner_id = tenantId",
+        "Cross-shop ids return 404, never another shop's row",
+        "A new shop starts with zero rows in every table"
+      ]
+    }
+  ]
+}

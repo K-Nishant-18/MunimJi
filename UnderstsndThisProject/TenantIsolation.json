@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MunimJi Multi-Tenant Data Isolation",
+    "subtitle": "One filter chain, two shops, zero shared rows",
+    "output": "TenantIsolation.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      540
+    ],
+    "views": [
+      {
+        "id": "one-filter",
+        "label": "One filter, two shops",
+        "focus": [
+          "ownerA",
+          "staffA",
+          "ownerB",
+          "filter",
+          "ctx"
+        ],
+        "note": "Both shops' tokens pass the same stateless filter and resolve to different tenants."
+      },
+      {
+        "id": "tenant-resolution",
+        "label": "Tenant resolution",
+        "focus": [
+          "filter",
+          "ctx",
+          "svc"
+        ],
+        "note": "The token becomes userId + tenantId; services read CurrentTenant on every call."
+      },
+      {
+        "id": "data-boundary",
+        "label": "Data boundary",
+        "focus": [
+          "svc",
+          "guard",
+          "repos",
+          "shopA",
+          "shopB"
+        ],
+        "note": "Queries hit only the caller's owner_id slice; foreign ids 404 at the guard."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "ownerA",
+      "type": "frontend",
+      "label": "Owner A Session",
+      "sublabel": "OWNER of shop A",
+      "tag": "tenant = 1",
+      "pos": [
+        40,
+        110
+      ],
+      "size": [
+        175,
+        60
+      ]
+    },
+    {
+      "id": "staffA",
+      "type": "frontend",
+      "label": "Staff of A",
+      "sublabel": "STAFF of shop A",
+      "tag": "tenant = 1",
+      "pos": [
+        40,
+        218
+      ],
+      "size": [
+        175,
+        60
+      ]
+    },
+    {
+      "id": "ownerB",
+      "type": "frontend",
+      "label": "Owner B Session",
+      "sublabel": "OWNER of shop B",
+      "tag": "tenant = 2",
+      "pos": [
+        40,
+        330
+      ],
+      "size": [
+        175,
+        60
+      ]
+    },
+    {
+      "id": "filter",
+      "type": "security",
+      "label": "JWT Filter",
+      "sublabel": "JwtAuthFilter",
+      "tag": "stateless",
+      "pos": [
+        300,
+        215
+      ],
+      "size": [
+        170,
+        66
+      ]
+    },
+    {
+      "id": "ctx",
+      "type": "security",
+      "label": "Tenant Context",
+      "sublabel": "AppUserDetails + CurrentTenant",
+      "tag": "userId + tenantId",
+      "pos": [
+        494,
+        215
+      ],
+      "size": [
+        200,
+        66
+      ]
+    },
+    {
+      "id": "svc",
+      "type": "backend",
+      "label": "Service Layer",
+      "sublabel": "tenant-scoped rules",
+      "tag": "@Transactional",
+      "pos": [
+        718,
+        215
+      ],
+      "size": [
+        190,
+        66
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "backend",
+      "label": "Tenant Guard",
+      "sublabel": "findById(ownerId)",
+      "tag": "404 if foreign",
+      "pos": [
+        718,
+        375
+      ],
+      "size": [
+        190,
+        66
+      ]
+    },
+    {
+      "id": "repos",
+      "type": "backend",
+      "label": "Repositories",
+      "sublabel": "9 JPA repositories",
+      "tag": "owner_id filter",
+      "pos": [
+        952,
+        215
+      ],
+      "size": [
+        170,
+        66
+      ]
+    },
+    {
+      "id": "shopA",
+      "type": "database",
+      "label": "Shop A Rows",
+      "sublabel": "owner_id = 1",
+      "tag": "categories, products, invoices",
+      "pos": [
+        1184,
+        115
+      ],
+      "size": [
+        170,
+        66
+      ]
+    },
+    {
+      "id": "shopB",
+      "type": "database",
+      "label": "Shop B Rows",
+      "sublabel": "owner_id = 2",
+      "tag": "separate data",
+      "pos": [
+        1184,
+        355
+      ],
+      "size": [
+        170,
+        66
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Sessions — two independent shops",
+      "wraps": [
+        "ownerA",
+        "staffA",
+        "ownerB"
+      ],
+      "pad": 20
+    },
+    {
+      "kind": "security-group",
+      "label": "Spring Boot jar — one tenant pipeline",
+      "wraps": [
+        "filter",
+        "ctx",
+        "svc",
+        "guard",
+        "repos"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "security-group",
+      "label": "Shop A data",
+      "wraps": [
+        "shopA"
+      ],
+      "pad": 18
+    },
+    {
+      "kind": "security-group",
+      "label": "Shop B data",
+      "wraps": [
+        "shopB"
+      ],
+      "pad": 18
+    }
+  ],
+  "connections": [
+    {
+      "id": "ownerA-to-filter",
+      "from": "ownerA",
+      "to": "filter",
+      "label": "Bearer (tenant 1)",
+      "variant": "emphasis",
+      "labelAt": [
+        240,
+        184
+      ]
+    },
+    {
+      "id": "staffA-to-filter",
+      "from": "staffA",
+      "to": "filter",
+      "label": "same shop, tenant 1",
+      "fromSide": "right",
+      "toSide": "left",
+      "via": [
+        [
+          270,
+          248
+        ]
+      ],
+      "labelAt": [
+        165,
+        300
+      ]
+    },
+    {
+      "id": "ownerB-to-filter",
+      "from": "ownerB",
+      "to": "filter",
+      "label": "Bearer (tenant 2)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "filter-to-ctx",
+      "from": "filter",
+      "to": "ctx",
+      "label": "resolve principal",
+      "variant": "security",
+      "labelAt": [
+        482,
+        295
+      ]
+    },
+    {
+      "id": "ctx-to-svc",
+      "from": "ctx",
+      "to": "svc",
+      "label": "scope every call",
+      "variant": "emphasis",
+      "labelAt": [
+        706,
+        295
+      ]
+    },
+    {
+      "id": "svc-to-repos",
+      "from": "svc",
+      "to": "repos",
+      "label": "WHERE owner_id = ?",
+      "variant": "emphasis",
+      "labelAt": [
+        930,
+        295
+      ]
+    },
+    {
+      "id": "svc-to-guard",
+      "from": "svc",
+      "to": "guard",
+      "label": "load by id",
+      "variant": "dashed",
+      "labelAt": [
+        849,
+        295
+      ]
+    },
+    {
+      "id": "guard-to-svc",
+      "from": "guard",
+      "to": "svc",
+      "label": "row or 404",
+      "variant": "default",
+      "labelAt": [
+        775,
+        340
+      ]
+    },
+    {
+      "id": "repos-to-shopA",
+      "from": "repos",
+      "to": "shopA",
+      "label": "tenant 1 → owner_id = 1",
+      "labelAt": [
+        1153,
+        195
+      ]
+    },
+    {
+      "id": "repos-to-shopB",
+      "from": "repos",
+      "to": "shopB",
+      "label": "tenant 2 → owner_id = 2"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Who maps to which tenant",
+      "items": [
+        "Owner resolves to own user id; staff to the owner's id",
+        "Anonymous callers reach only /auth/login and /auth/register",
+        "Seeded shop: owner@munimji.local owns owner_id = 1"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Register rules",
+      "items": [
+        "Anonymous register creates an OWNER (201 + token)",
+        "An owner token may add STAFF only; a second OWNER gets 403",
+        "STAFF tokens cannot create users (403)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Isolation guarantees",
+      "items": [
+        "StockBatch and InvoiceItem scope via product and invoice joins",
+        "Category names and invoice numbers are unique per shop",
+        "data.sql seeds one owner shop; other shops start empty"
+      ]
+    }
+  ]
+}
