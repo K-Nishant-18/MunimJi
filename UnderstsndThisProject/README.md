@@ -7,8 +7,8 @@ Seven interactive architecture diagrams for the MunimJi inventory + GST billing 
 Each diagram supports dark/light themes and export to PNG/SVG from its own toolbar.
 
 **File pairs:** `.json` is the editable source (archify schema), `.html` is the
-delivered standalone artifact. `.visual-check.*.png` files are viewport screenshots
-(1440x900 and 2048x1320, dark + light) produced during validation.
+delivered standalone artifact. `*.visual-check.1440x900.*.png` files are proof
+screenshots (dark + light) shown as thumbnails in `index.html`.
 
 ## Diagram index
 
@@ -33,5 +33,6 @@ node bin/archify.mjs deliver <type> <file.json> <file.html> --quality showcase
 node bin/archify.mjs visual-check <file.html>
 ```
 
-Current status: **7/7 diagrams pass all 9 showcase checks and viewport
-visual-checks (1440x900, 1600x1000, 1920x1080, 2048x1320).**
+Current status: **7/7 diagrams pass all 9 showcase checks and were validated
+across all four viewports (1440x900, 1600x1000, 1920x1080, 2048x1320);
+1440x900 proof screenshots are retained.**
