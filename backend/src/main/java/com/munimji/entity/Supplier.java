@@ -26,6 +26,10 @@ public class Supplier {
 
     private String gstin;
 
+    // Shop this supplier belongs to (owner's user id)
+    @Column(name = "owner_id")
+    private Long ownerId;
+
     public Supplier() {
     }
 
@@ -75,5 +79,13 @@ public class Supplier {
 
     public void setGstin(String gstin) {
         this.gstin = gstin;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 }

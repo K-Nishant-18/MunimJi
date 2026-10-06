@@ -23,7 +23,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // Open only for the very first user; afterwards an OWNER token is required
+    // Open to everyone as OWNER (starts a new shop); an OWNER token may add STAFF
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request,
                                                  Authentication authentication) {

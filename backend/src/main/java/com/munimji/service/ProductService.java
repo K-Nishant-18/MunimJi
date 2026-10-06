@@ -11,6 +11,7 @@ import com.munimji.repository.CategoryRepository;
 import com.munimji.repository.InvoiceItemRepository;
 import com.munimji.repository.ProductRepository;
 import com.munimji.repository.PurchaseItemRepository;
+import com.munimji.security.CurrentTenant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +44,7 @@ public class ProductService {
     public PagedResponse<ProductResponse> search(String search, int page, int size) {
         String query = search == null ? "" : search.trim();
         Pageable pageable = PageRequest.of(page, size, Sort.by("name"));
-        Page<Product> result = productRepository.search(query, pageable);
+        Page<Product> result = productRepository.search(CurrentTenant.id(), query, pageable);
 
         List<ProductResponse> content = new ArrayList<>();
         for (Product product : result.getContent()) {
@@ -55,10 +56,12 @@ public class ProductService {
 
     @Transactional
     public ProductResponse create(ProductRequest request) {
-        if (productRepository.existsByBarcode(request.getBarcode())) {
+        Long ownerId = CurrentTenant.id();
+        if (productRepository.existsByOwnerIdAndBarcode(ownerId, request.getBarcode())) {
             throw new ConflictException("A product with this barcode already exists");
         }
         Product product = new Product();
+        product.setOwnerId(ownerId);
         applyRequest(product, request);
         productRepository.save(product);
         return toResponse(product);
@@ -68,7 +71,8 @@ public class ProductService {
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = findById(id);
         String barcode = blankToNull(request.getBarcode());
-        if (barcode != null && productRepository.existsByBarcodeAndIdNot(barcode, id)) {
+        if (barcode != null
+                && productRepository.existsByOwnerIdAndBarcodeAndIdNot(product.getOwnerId(), barcode, id)) {
             throw new ConflictException("A product with this barcode already exists");
         }
         applyRequest(product, request);
@@ -102,13 +106,21 @@ public class ProductService {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Category not found with id " + request.getCategoryId()));
+            if (!product.getOwnerId().equals(category.getOwnerId())) {
+                throw new ResourceNotFoundException(
+                        "Category not found with id " + request.getCategoryId());
+            }
             product.setCategory(category);
         }
     }
 
     private Product findById(Long id) {
-        return productRepository.findById(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id " + id));
+        if (!CurrentTenant.id().equals(product.getOwnerId())) {
+            throw new ResourceNotFoundException("Product not found with id " + id);
+        }
+        return product;
     }
 
     private ProductResponse toResponse(Product product) {

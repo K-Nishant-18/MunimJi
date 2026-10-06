@@ -81,11 +81,20 @@ $r = Call "POST" "/api/auth/login" $null @{ email = "staff@munimji.local"; passw
 Assert ($r.Status -eq 200 -and $r.Json.role -eq "STAFF") "login as staff returns 200 with role STAFF"
 $staff = $r.Json.token
 
-$r = Call "POST" "/api/auth/register" $null @{ name = "No Token"; email = "nobody@x.com"; password = "secret123" }
-Assert ($r.Status -eq 403) "register without token is refused (403) after bootstrap"
+$r = Call "POST" "/api/auth/register" $null @{ name = "No Token"; email = "nobody@x.com"; password = "secret123"; role = "STAFF" }
+Assert ($r.Status -eq 403) "public register as staff is refused (403)"
+
+$r = Call "POST" "/api/auth/register" $null @{ name = "New Shop"; email = "newshop@x.com"; password = "secret123" }
+Assert ($r.Status -eq 201 -and $r.Json.token) "anyone can register a new shop as owner (201 + token)"
 
 $r = Call "POST" "/api/auth/register" $owner @{ name = "Second Owner"; email = "owner2@munimji.local"; password = "secret123"; role = "OWNER" }
-Assert ($r.Status -eq 201 -and $r.Json.token) "owner can register a new user (201 + token)"
+Assert ($r.Status -eq 403) "owner cannot create a second owner (403)"
+
+$r = Call "POST" "/api/auth/register" $owner @{ name = "Shop Staff"; email = "shopstaff@x.com"; password = "secret123"; role = "STAFF" }
+Assert ($r.Status -eq 201 -and $r.Json.token) "owner can register staff (201 + token)"
+
+$r = Call "POST" "/api/auth/register" $staff @{ name = "Staff Try"; email = "stafftry@x.com"; password = "secret123"; role = "STAFF" }
+Assert ($r.Status -eq 403) "staff cannot create users (403)"
 
 $r = Call "GET" "/api/products" $null $null
 Assert ($r.Status -eq 401) "products list without token returns 401"

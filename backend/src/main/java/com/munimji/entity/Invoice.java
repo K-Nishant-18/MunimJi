@@ -22,8 +22,8 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Format INV-YYYY-NNNN, generated from the last invoice
-    @Column(nullable = false, unique = true)
+    // Format INV-YYYY-NNNN, generated per shop from the last invoice of that shop
+    @Column(nullable = false)
     private String invoiceNumber;
 
     @Column(nullable = false)
@@ -56,6 +56,10 @@ public class Invoice {
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InvoiceItem> items = new ArrayList<>();
+
+    // Shop this invoice belongs to (owner's user id)
+    @Column(name = "owner_id")
+    private Long ownerId;
 
     public Invoice() {
     }
@@ -154,5 +158,13 @@ public class Invoice {
 
     public void setItems(List<InvoiceItem> items) {
         this.items = items;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 }

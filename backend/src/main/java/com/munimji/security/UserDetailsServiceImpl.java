@@ -1,7 +1,6 @@
 package com.munimji.security;
 
 import com.munimji.repository.UserRepository;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,10 +20,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         com.munimji.entity.User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // roles() automatically prefixes ROLE_, so hasRole("OWNER") works
-        return User.withUsername(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
-                .build();
+        // An owner IS their own shop, staff belong to the owner's shop
+        Long tenantId = user.getOwnerId() != null ? user.getOwnerId() : user.getId();
+        return new AppUserDetails(user.getId(), tenantId, user.getEmail(),
+                user.getPassword(), user.getRole());
     }
 }

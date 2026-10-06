@@ -11,6 +11,7 @@ import com.munimji.entity.InvoiceItem;
 import com.munimji.repository.InvoiceItemRepository;
 import com.munimji.repository.InvoiceRepository;
 import com.munimji.repository.ProductRepository;
+import com.munimji.security.CurrentTenant;
 import com.munimji.util.MoneyUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,9 +64,11 @@ public class ReportService {
         long todayCount = 0;
         BigDecimal monthSales = MoneyUtil.zero();
         long monthCount = 0;
+        Long ownerId = CurrentTenant.id();
 
         // Invoices of the current month, day totals come from the same list
-        for (Invoice invoice : invoiceRepository.findByInvoiceDateBetweenOrderByInvoiceDateAsc(monthStart, now)) {
+        for (Invoice invoice : invoiceRepository
+                .findByOwnerIdAndInvoiceDateBetweenOrderByInvoiceDateAsc(ownerId, monthStart, now)) {
             monthSales = monthSales.add(invoice.getGrandTotal());
             monthCount++;
             if (!invoice.getInvoiceDate().isBefore(dayStart)) {
@@ -81,8 +84,8 @@ public class ReportService {
         long expiringSoonCount = stockService.expiring(30).size();
 
         return new ReportSummaryResponse(todaySales, todayCount, monthSales, monthCount,
-                productRepository.count(), lowStockCount, expiringSoonCount,
-                invoiceRepository.count());
+                productRepository.countByOwnerId(ownerId), lowStockCount, expiringSoonCount,
+                invoiceRepository.countByOwnerId(ownerId));
     }
 
     /** Sales total for each of the last 12 months, oldest first (line chart). */
@@ -101,7 +104,8 @@ public class ReportService {
             cursor = cursor.plusMonths(1);
         }
 
-        for (Invoice invoice : invoiceRepository.findByInvoiceDateBetweenOrderByInvoiceDateAsc(start, end)) {
+        for (Invoice invoice : invoiceRepository
+                .findByOwnerIdAndInvoiceDateBetweenOrderByInvoiceDateAsc(CurrentTenant.id(), start, end)) {
             String key = invoice.getInvoiceDate().format(DateTimeFormatter.ofPattern("yyyy-MM"));
             totals.put(key, totals.getOrDefault(key, MoneyUtil.zero()).add(invoice.getGrandTotal()));
         }
@@ -124,7 +128,8 @@ public class ReportService {
         Map<String, Integer> quantityByName = new HashMap<>();
         Map<String, BigDecimal> amountByName = new HashMap<>();
 
-        for (InvoiceItem item : invoiceItemRepository.findByInvoiceDateRange(start, LocalDateTime.now())) {
+        for (InvoiceItem item : invoiceItemRepository.findByInvoiceDateRange(CurrentTenant.id(),
+                start, LocalDateTime.now())) {
             String name = item.getProductName();
             quantityByName.put(name, quantityByName.getOrDefault(name, 0) + item.getQuantity());
             amountByName.put(name, amountByName.getOrDefault(name, MoneyUtil.zero())
@@ -181,7 +186,8 @@ public class ReportService {
         Set<Long> invoiceIds = new HashSet<>();
         Map<BigDecimal, BigDecimal[]> byRate = new TreeMap<>();
 
-        for (InvoiceItem item : invoiceItemRepository.findByInvoiceDateRange(start, end)) {
+        for (InvoiceItem item : invoiceItemRepository.findByInvoiceDateRange(CurrentTenant.id(),
+                start, end)) {
             BigDecimal cgst = MoneyUtil.round(item.getGstAmount().divide(MoneyUtil.TWO, 8,
                     java.math.RoundingMode.HALF_UP));
             BigDecimal sgst = MoneyUtil.round(item.getGstAmount().subtract(cgst));

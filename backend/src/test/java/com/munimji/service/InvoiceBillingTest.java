@@ -5,13 +5,20 @@ import com.munimji.dto.invoice.InvoiceRequest;
 import com.munimji.dto.invoice.InvoiceResponse;
 import com.munimji.entity.Product;
 import com.munimji.entity.StockBatch;
+import com.munimji.entity.UserRole;
 import com.munimji.exception.InsufficientStockException;
 import com.munimji.repository.InvoiceRepository;
 import com.munimji.repository.ProductRepository;
 import com.munimji.repository.StockBatchRepository;
+import com.munimji.security.AppUserDetails;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +50,22 @@ class InvoiceBillingTest {
 
     @Autowired
     private InvoiceRepository invoiceRepository;
+
+    // These tests call the service directly, so the SecurityContext must say
+    // which shop is calling: the seeded owner (id 1) who owns the seed products
+    @BeforeEach
+    void loginAsSeededOwner() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        new AppUserDetails(1L, 1L, "owner@munimji.local", "n/a", UserRole.OWNER),
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_OWNER"))));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     void fefo_deductsEarliestExpiryFirst() {

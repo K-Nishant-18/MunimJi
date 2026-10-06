@@ -7,6 +7,7 @@ import com.munimji.exception.ConflictException;
 import com.munimji.exception.ResourceNotFoundException;
 import com.munimji.repository.PurchaseRepository;
 import com.munimji.repository.SupplierRepository;
+import com.munimji.security.CurrentTenant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,7 @@ public class SupplierService {
     @Transactional(readOnly = true)
     public List<SupplierResponse> findAll() {
         List<SupplierResponse> result = new ArrayList<>();
-        for (Supplier supplier : supplierRepository.findAllByOrderByNameAsc()) {
+        for (Supplier supplier : supplierRepository.findAllByOwnerIdOrderByNameAsc(CurrentTenant.id())) {
             result.add(toResponse(supplier));
         }
         return result;
@@ -36,6 +37,7 @@ public class SupplierService {
     @Transactional
     public SupplierResponse create(SupplierRequest request) {
         Supplier supplier = new Supplier();
+        supplier.setOwnerId(CurrentTenant.id());
         applyRequest(supplier, request);
         supplierRepository.save(supplier);
         return toResponse(supplier);
@@ -51,7 +53,7 @@ public class SupplierService {
     @Transactional
     public void delete(Long id) {
         Supplier supplier = findById(id);
-        if (purchaseRepository.existsBySupplierId(id)) {
+        if (purchaseRepository.existsByOwnerIdAndSupplierId(supplier.getOwnerId(), id)) {
             throw new ConflictException("Supplier has purchases and cannot be deleted");
         }
         supplierRepository.delete(supplier);
@@ -66,8 +68,12 @@ public class SupplierService {
     }
 
     private Supplier findById(Long id) {
-        return supplierRepository.findById(id)
+        Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with id " + id));
+        if (!CurrentTenant.id().equals(supplier.getOwnerId())) {
+            throw new ResourceNotFoundException("Supplier not found with id " + id);
+        }
+        return supplier;
     }
 
     private SupplierResponse toResponse(Supplier supplier) {

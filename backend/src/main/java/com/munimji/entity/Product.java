@@ -53,6 +53,10 @@ public class Product {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<StockBatch> batches = new ArrayList<>();
 
+    // Shop this product belongs to (owner's user id)
+    @Column(name = "owner_id")
+    private Long ownerId;
+
     public Product() {
     }
 
@@ -134,5 +138,13 @@ public class Product {
 
     public void setBatches(List<StockBatch> batches) {
         this.batches = batches;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 }

@@ -12,8 +12,10 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
 
     // Invoice is fetched with every item so report queries never go N+1
     @Query("SELECT ii FROM InvoiceItem ii JOIN FETCH ii.invoice "
-            + "WHERE ii.invoice.invoiceDate >= :start AND ii.invoice.invoiceDate < :end")
-    List<InvoiceItem> findByInvoiceDateRange(@Param("start") LocalDateTime start,
+            + "WHERE ii.invoice.ownerId = :ownerId "
+            + "AND ii.invoice.invoiceDate >= :start AND ii.invoice.invoiceDate < :end")
+    List<InvoiceItem> findByInvoiceDateRange(@Param("ownerId") Long ownerId,
+                                             @Param("start") LocalDateTime start,
                                              @Param("end") LocalDateTime end);
 
     boolean existsByProductId(Long productId);

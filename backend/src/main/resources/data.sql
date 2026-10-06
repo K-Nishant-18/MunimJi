@@ -5,114 +5,117 @@
 --   * CURRENT_DATE + INTERVAL '45' DAY       (relative expiry dates)
 -- Explicit ids are used so the foreign keys are easy to read; MySQL and H2
 -- move their identity counter to max(id) + 1 automatically.
+-- All sample rows belong to shop (owner_id) 1 = owner@munimji.local; the
+-- staff user works in that shop. Stock batches and invoice items inherit the
+-- shop from their product / invoice, so they carry no owner_id of their own.
 -- ---------------------------------------------------------------------------
 
 -- Users: 1 owner + 1 staff (passwords are BCrypt hashes of owner123 / staff123)
-INSERT INTO users (id, name, email, password, role)
-SELECT 1, 'Ramesh Sharma', 'owner@munimji.local', '$2a$10$NLL.AsGcbVoMnBQDhYjgCOTJrR7NO37TxFNcwG/9QW0PRwAI3UeR2', 'OWNER'
+INSERT INTO users (id, owner_id, name, email, password, role)
+SELECT 1, NULL, 'Ramesh Sharma', 'owner@munimji.local', '$2a$10$NLL.AsGcbVoMnBQDhYjgCOTJrR7NO37TxFNcwG/9QW0PRwAI3UeR2', 'OWNER'
 WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = 'owner@munimji.local');
 
-INSERT INTO users (id, name, email, password, role)
-SELECT 2, 'Amit Verma', 'staff@munimji.local', '$2a$10$JJ0J4GWi6RI4NkuQLl7f8.S7onwfGepDfjwhZyQWL2fN.4pLgB9CO', 'STAFF'
+INSERT INTO users (id, owner_id, name, email, password, role)
+SELECT 2, 1, 'Amit Verma', 'staff@munimji.local', '$2a$10$JJ0J4GWi6RI4NkuQLl7f8.S7onwfGepDfjwhZyQWL2fN.4pLgB9CO', 'STAFF'
 WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = 'staff@munimji.local');
 
 -- Categories
-INSERT INTO category (id, name)
-SELECT 1, 'Kirana' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.name = 'Kirana');
-INSERT INTO category (id, name)
-SELECT 2, 'Beverages' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.name = 'Beverages');
-INSERT INTO category (id, name)
-SELECT 3, 'Snacks' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.name = 'Snacks');
-INSERT INTO category (id, name)
-SELECT 4, 'Personal Care' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.name = 'Personal Care');
-INSERT INTO category (id, name)
-SELECT 5, 'Medicines' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.name = 'Medicines');
-INSERT INTO category (id, name)
-SELECT 6, 'Household' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.name = 'Household');
+INSERT INTO category (id, owner_id, name)
+SELECT 1, 1, 'Kirana' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.owner_id = 1 AND c.name = 'Kirana');
+INSERT INTO category (id, owner_id, name)
+SELECT 2, 1, 'Beverages' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.owner_id = 1 AND c.name = 'Beverages');
+INSERT INTO category (id, owner_id, name)
+SELECT 3, 1, 'Snacks' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.owner_id = 1 AND c.name = 'Snacks');
+INSERT INTO category (id, owner_id, name)
+SELECT 4, 1, 'Personal Care' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.owner_id = 1 AND c.name = 'Personal Care');
+INSERT INTO category (id, owner_id, name)
+SELECT 5, 1, 'Medicines' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.owner_id = 1 AND c.name = 'Medicines');
+INSERT INTO category (id, owner_id, name)
+SELECT 6, 1, 'Household' WHERE NOT EXISTS (SELECT 1 FROM category c WHERE c.owner_id = 1 AND c.name = 'Household');
 
 -- Suppliers (3)
-INSERT INTO supplier (id, name, phone, email, address, gstin)
-SELECT 1, 'Sharma Distributors', '9812345678', 'sharma.dist@example.com', '14 Market Road, Indore', '23AACCS1234A1Z1'
-WHERE NOT EXISTS (SELECT 1 FROM supplier s WHERE s.name = 'Sharma Distributors');
-INSERT INTO supplier (id, name, phone, email, address, gstin)
-SELECT 2, 'Gupta Wholesale Traders', '9822345678', 'gupta.wholesale@example.com', '22 Station Road, Bhopal', '23AADCG5678A1Z2'
-WHERE NOT EXISTS (SELECT 1 FROM supplier s WHERE s.name = 'Gupta Wholesale Traders');
-INSERT INTO supplier (id, name, phone, email, address, gstin)
-SELECT 3, 'MediCare Pharma Supplies', '9832345678', 'medicare.supplies@example.com', '5 Pharma Mandi, Indore', '23AABCM9012A1Z3'
-WHERE NOT EXISTS (SELECT 1 FROM supplier s WHERE s.name = 'MediCare Pharma Supplies');
+INSERT INTO supplier (id, owner_id, name, phone, email, address, gstin)
+SELECT 1, 1, 'Sharma Distributors', '9812345678', 'sharma.dist@example.com', '14 Market Road, Indore', '23AACCS1234A1Z1'
+WHERE NOT EXISTS (SELECT 1 FROM supplier s WHERE s.owner_id = 1 AND s.name = 'Sharma Distributors');
+INSERT INTO supplier (id, owner_id, name, phone, email, address, gstin)
+SELECT 2, 1, 'Gupta Wholesale Traders', '9822345678', 'gupta.wholesale@example.com', '22 Station Road, Bhopal', '23AADCG5678A1Z2'
+WHERE NOT EXISTS (SELECT 1 FROM supplier s WHERE s.owner_id = 1 AND s.name = 'Gupta Wholesale Traders');
+INSERT INTO supplier (id, owner_id, name, phone, email, address, gstin)
+SELECT 3, 1, 'MediCare Pharma Supplies', '9832345678', 'medicare.supplies@example.com', '5 Pharma Mandi, Indore', '23AABCM9012A1Z3'
+WHERE NOT EXISTS (SELECT 1 FROM supplier s WHERE s.owner_id = 1 AND s.name = 'MediCare Pharma Supplies');
 
 -- Products (20, mix of kirana and pharmacy)
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 1, 'Basmati Rice 5kg', '8901234000011', 'pouch', '1006', 5.00, 450.00, 10, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000011');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 2, 'Toor Dal 1kg', '8901234000028', 'pack', '0713', 5.00, 160.00, 15, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000028');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 3, 'Refined Sunflower Oil 1L', '8901234000035', 'bottle', '1512', 5.00, 145.00, 12, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000035');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 4, 'Whole Wheat Atta 10kg', '8901234000042', 'bag', '1101', 0.00, 420.00, 8, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000042');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 5, 'Sugar 1kg', '8901234000059', 'pack', '1701', 5.00, 45.00, 20, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000059');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 6, 'Iodized Salt 500g', '8901234000066', 'pack', '2501', 0.00, 22.00, 25, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000066');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 7, 'Tea Leaves 250g', '8901234000073', 'pack', '0902', 5.00, 130.00, 10, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000073');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 8, 'Turmeric Powder 200g', '8901234000080', 'pack', '0910', 5.00, 60.00, 12, 1
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000080');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 9, 'Cola 750ml', '8901234000097', 'bottle', '2202', 28.00, 40.00, 24, 2
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000097');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 10, 'Mango Juice 1L', '8901234000103', 'tetra', '2009', 12.00, 110.00, 10, 2
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000103');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 11, 'Packaged Drinking Water 1L', '8901234000110', 'bottle', '2201', 18.00, 20.00, 30, 2
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000110');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 12, 'Potato Chips 90g', '8901234000127', 'pack', '2005', 12.00, 50.00, 20, 3
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000127');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 13, 'Marie Biscuits 250g', '8901234000134', 'pack', '1905', 18.00, 55.00, 15, 3
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000134');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 14, 'Bath Soap 100g', '8901234000141', 'pack', '3401', 18.00, 42.00, 30, 4
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000141');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 15, 'Toothpaste 150g', '8901234000158', 'tube', '3306', 18.00, 95.00, 15, 4
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000158');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 16, 'Shampoo 340ml', '8901234000165', 'bottle', '3305', 18.00, 210.00, 8, 4
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000165');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 17, 'Paracetamol 500mg Strip', '8901234000172', 'strip', '3004', 12.00, 30.00, 25, 5
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000172');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 18, 'ORS Sachet 21g', '8901234000189', 'sachet', '3004', 12.00, 22.00, 40, 5
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000189');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 19, 'Cough Syrup 100ml', '8901234000196', 'bottle', '3004', 12.00, 145.00, 10, 5
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000196');
-INSERT INTO product (id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
-SELECT 20, 'Detergent Powder 1kg', '8901234000202', 'pack', '3402', 18.00, 135.00, 12, 6
-WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.barcode = '8901234000202');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 1, 1, 'Basmati Rice 5kg', '8901234000011', 'pouch', '1006', 5.00, 450.00, 10, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000011');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 2, 1, 'Toor Dal 1kg', '8901234000028', 'pack', '0713', 5.00, 160.00, 15, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000028');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 3, 1, 'Refined Sunflower Oil 1L', '8901234000035', 'bottle', '1512', 5.00, 145.00, 12, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000035');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 4, 1, 'Whole Wheat Atta 10kg', '8901234000042', 'bag', '1101', 0.00, 420.00, 8, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000042');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 5, 1, 'Sugar 1kg', '8901234000059', 'pack', '1701', 5.00, 45.00, 20, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000059');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 6, 1, 'Iodized Salt 500g', '8901234000066', 'pack', '2501', 0.00, 22.00, 25, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000066');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 7, 1, 'Tea Leaves 250g', '8901234000073', 'pack', '0902', 5.00, 130.00, 10, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000073');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 8, 1, 'Turmeric Powder 200g', '8901234000080', 'pack', '0910', 5.00, 60.00, 12, 1
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000080');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 9, 1, 'Cola 750ml', '8901234000097', 'bottle', '2202', 28.00, 40.00, 24, 2
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000097');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 10, 1, 'Mango Juice 1L', '8901234000103', 'tetra', '2009', 12.00, 110.00, 10, 2
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000103');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 11, 1, 'Packaged Drinking Water 1L', '8901234000110', 'bottle', '2201', 18.00, 20.00, 30, 2
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000110');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 12, 1, 'Potato Chips 90g', '8901234000127', 'pack', '2005', 12.00, 50.00, 20, 3
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000127');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 13, 1, 'Marie Biscuits 250g', '8901234000134', 'pack', '1905', 18.00, 55.00, 15, 3
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000134');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 14, 1, 'Bath Soap 100g', '8901234000141', 'pack', '3401', 18.00, 42.00, 30, 4
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000141');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 15, 1, 'Toothpaste 150g', '8901234000158', 'tube', '3306', 18.00, 95.00, 15, 4
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000158');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 16, 1, 'Shampoo 340ml', '8901234000165', 'bottle', '3305', 18.00, 210.00, 8, 4
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000165');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 17, 1, 'Paracetamol 500mg Strip', '8901234000172', 'strip', '3004', 12.00, 30.00, 25, 5
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000172');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 18, 1, 'ORS Sachet 21g', '8901234000189', 'sachet', '3004', 12.00, 22.00, 40, 5
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000189');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 19, 1, 'Cough Syrup 100ml', '8901234000196', 'bottle', '3004', 12.00, 145.00, 10, 5
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000196');
+INSERT INTO product (id, owner_id, name, barcode, unit, hsn_code, gst_rate, selling_price, reorder_level, category_id)
+SELECT 20, 1, 'Detergent Powder 1kg', '8901234000202', 'pack', '3402', 18.00, 135.00, 12, 6
+WHERE NOT EXISTS (SELECT 1 FROM product p WHERE p.owner_id = 1 AND p.barcode = '8901234000202');
 
 -- Purchases (3)
-INSERT INTO purchase (id, supplier_bill_no, supplier_id, purchase_date, total)
-SELECT 1, 'SD-1001', 1, CURRENT_DATE + INTERVAL '-45' DAY, 24165.00
-WHERE NOT EXISTS (SELECT 1 FROM purchase p WHERE p.supplier_bill_no = 'SD-1001');
-INSERT INTO purchase (id, supplier_bill_no, supplier_id, purchase_date, total)
-SELECT 2, 'GW-2002', 2, CURRENT_DATE + INTERVAL '-30' DAY, 10220.00
-WHERE NOT EXISTS (SELECT 1 FROM purchase p WHERE p.supplier_bill_no = 'GW-2002');
-INSERT INTO purchase (id, supplier_bill_no, supplier_id, purchase_date, total)
-SELECT 3, 'MP-3003', 3, CURRENT_DATE + INTERVAL '-20' DAY, 6600.00
-WHERE NOT EXISTS (SELECT 1 FROM purchase p WHERE p.supplier_bill_no = 'MP-3003');
+INSERT INTO purchase (id, owner_id, supplier_bill_no, supplier_id, purchase_date, total)
+SELECT 1, 1, 'SD-1001', 1, CURRENT_DATE + INTERVAL '-45' DAY, 24165.00
+WHERE NOT EXISTS (SELECT 1 FROM purchase p WHERE p.owner_id = 1 AND p.supplier_bill_no = 'SD-1001');
+INSERT INTO purchase (id, owner_id, supplier_bill_no, supplier_id, purchase_date, total)
+SELECT 2, 1, 'GW-2002', 2, CURRENT_DATE + INTERVAL '-30' DAY, 10220.00
+WHERE NOT EXISTS (SELECT 1 FROM purchase p WHERE p.owner_id = 1 AND p.supplier_bill_no = 'GW-2002');
+INSERT INTO purchase (id, owner_id, supplier_bill_no, supplier_id, purchase_date, total)
+SELECT 3, 1, 'MP-3003', 3, CURRENT_DATE + INTERVAL '-20' DAY, 6600.00
+WHERE NOT EXISTS (SELECT 1 FROM purchase p WHERE p.owner_id = 1 AND p.supplier_bill_no = 'MP-3003');
 
 -- Purchase items
 INSERT INTO purchase_item (id, purchase_id, product_id, quantity, cost_price, batch_no, expiry_date)
@@ -236,41 +239,41 @@ SELECT 19, 16, 'B-SHAM-01', CURRENT_DATE + INTERVAL '540' DAY, 6, 160.00, 0
 WHERE NOT EXISTS (SELECT 1 FROM stock_batch b WHERE b.batch_no = 'B-SHAM-01');
 
 -- Two invoices from today so the dashboard and reports show real numbers
-INSERT INTO invoice (id, invoice_number, invoice_date, customer_name, customer_phone,
+INSERT INTO invoice (id, owner_id, invoice_number, invoice_date, customer_name, customer_phone,
                      sub_total, discount_amount, cgst_amount, sgst_amount, gst_amount, grand_total)
-SELECT 1, CONCAT('INV-', YEAR(CURRENT_DATE), '-0001'), CURRENT_TIMESTAMP, 'Sunita Devi', '9000000001',
+SELECT 1, 1, CONCAT('INV-', YEAR(CURRENT_DATE), '-0001'), CURRENT_TIMESTAMP, 'Sunita Devi', '9000000001',
        1060.00, 0.00, 44.90, 44.90, 89.80, 1149.80
 WHERE NOT EXISTS (SELECT 1 FROM invoice i
-                  WHERE i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0001'));
-INSERT INTO invoice (id, invoice_number, invoice_date, customer_name, customer_phone,
+                  WHERE i.owner_id = 1 AND i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0001'));
+INSERT INTO invoice (id, owner_id, invoice_number, invoice_date, customer_name, customer_phone,
                      sub_total, discount_amount, cgst_amount, sgst_amount, gst_amount, grand_total)
-SELECT 2, CONCAT('INV-', YEAR(CURRENT_DATE), '-0002'), CURRENT_TIMESTAMP, 'Rahul Gupta', '9000000002',
+SELECT 2, 1, CONCAT('INV-', YEAR(CURRENT_DATE), '-0002'), CURRENT_TIMESTAMP, 'Rahul Gupta', '9000000002',
        235.00, 10.00, 8.98, 8.97, 17.95, 242.95
 WHERE NOT EXISTS (SELECT 1 FROM invoice i
-                  WHERE i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0002'));
+                  WHERE i.owner_id = 1 AND i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0002'));
 
 -- Invoice items (name, HSN, price and GST rate are snapshots of the product)
 INSERT INTO invoice_item (id, invoice_id, product_id, stock_batch_id, product_name, hsn_code,
                           unit_price, gst_rate, quantity, discount_amount, taxable_amount,
                           gst_amount, line_total)
-SELECT 1, (SELECT i.id FROM invoice i WHERE i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0001')),
+SELECT 1, (SELECT i.id FROM invoice i WHERE i.owner_id = 1 AND i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0001')),
        1, 1, 'Basmati Rice 5kg', '1006', 450.00, 5.00, 2, 0.00, 900.00, 45.00, 945.00
 WHERE NOT EXISTS (SELECT 1 FROM invoice_item ii WHERE ii.id = 1);
 INSERT INTO invoice_item (id, invoice_id, product_id, stock_batch_id, product_name, hsn_code,
                           unit_price, gst_rate, quantity, discount_amount, taxable_amount,
                           gst_amount, line_total)
-SELECT 2, (SELECT i.id FROM invoice i WHERE i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0001')),
+SELECT 2, (SELECT i.id FROM invoice i WHERE i.owner_id = 1 AND i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0001')),
        9, 8, 'Cola 750ml', '2202', 40.00, 28.00, 4, 0.00, 160.00, 44.80, 204.80
 WHERE NOT EXISTS (SELECT 1 FROM invoice_item ii WHERE ii.id = 2);
 INSERT INTO invoice_item (id, invoice_id, product_id, stock_batch_id, product_name, hsn_code,
                           unit_price, gst_rate, quantity, discount_amount, taxable_amount,
                           gst_amount, line_total)
-SELECT 3, (SELECT i.id FROM invoice i WHERE i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0002')),
+SELECT 3, (SELECT i.id FROM invoice i WHERE i.owner_id = 1 AND i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0002')),
        5, 3, 'Sugar 1kg', '1701', 45.00, 5.00, 3, 5.74, 129.26, 6.46, 135.72
 WHERE NOT EXISTS (SELECT 1 FROM invoice_item ii WHERE ii.id = 3);
 INSERT INTO invoice_item (id, invoice_id, product_id, stock_batch_id, product_name, hsn_code,
                           unit_price, gst_rate, quantity, discount_amount, taxable_amount,
                           gst_amount, line_total)
-SELECT 4, (SELECT i.id FROM invoice i WHERE i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0002')),
+SELECT 4, (SELECT i.id FROM invoice i WHERE i.owner_id = 1 AND i.invoice_number = CONCAT('INV-', YEAR(CURRENT_DATE), '-0002')),
        12, 9, 'Potato Chips 90g', '2005', 50.00, 12.00, 2, 4.26, 95.74, 11.49, 107.23
 WHERE NOT EXISTS (SELECT 1 FROM invoice_item ii WHERE ii.id = 4);

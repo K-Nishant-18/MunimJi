@@ -5,11 +5,14 @@ import com.munimji.dto.auth.LoginRequest;
 import com.munimji.dto.auth.RegisterRequest;
 import com.munimji.entity.User;
 import com.munimji.entity.UserRole;
+import com.munimji.exception.BadRequestException;
 import com.munimji.exception.ConflictException;
 import com.munimji.exception.ForbiddenException;
 import com.munimji.exception.UnauthorizedException;
 import com.munimji.repository.UserRepository;
+import com.munimji.security.AppUserDetails;
 import com.munimji.security.JwtUtil;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,15 +38,16 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
+    /**
+     * Three ways to register:
+     *  - no token: open to everyone, but only as OWNER (starts a new shop)
+     *  - OWNER token: may only add STAFF to his own shop
+     *  - STAFF token: not allowed
+     */
     @Transactional
     public AuthResponse register(RegisterRequest request, Authentication currentAuth) {
-        // First user of a fresh database: anyone may register (bootstrap owner)
-        boolean firstUser = userRepository.count() == 0;
-        if (!firstUser && !isOwner(currentAuth)) {
-            throw new ForbiddenException("Only the owner can create new users");
-        }
-
-        if (userRepository.existsByEmail(request.getEmail().trim().toLowerCase())) {
+        String email = request.getEmail().trim().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
             throw new ConflictException("A user with this email already exists");
         }
 
@@ -52,14 +56,29 @@ public class AuthService {
             try {
                 role = UserRole.valueOf(request.getRole().trim().toUpperCase());
             } catch (IllegalArgumentException ex) {
-                throw new ForbiddenException("Role must be OWNER or STAFF");
+                throw new BadRequestException("Role must be OWNER or STAFF");
             }
         }
 
         User user = new User(request.getName().trim(),
-                request.getEmail().trim().toLowerCase(),
+                email,
                 passwordEncoder.encode(request.getPassword()),
                 role);
+
+        if (isAnonymous(currentAuth)) {
+            if (role != UserRole.OWNER) {
+                throw new ForbiddenException("Register as an owner to start a new shop");
+            }
+            // ownerId stays null: an owner IS their own shop
+        } else if (isOwner(currentAuth)) {
+            if (role != UserRole.STAFF) {
+                throw new ForbiddenException("An owner can only add staff users");
+            }
+            user.setOwnerId(((AppUserDetails) currentAuth.getPrincipal()).getTenantId());
+        } else {
+            throw new ForbiddenException("Only the owner can create new users");
+        }
+
         userRepository.save(user);
 
         String token = jwtUtil.generateToken(user);
@@ -82,8 +101,16 @@ public class AuthService {
         return new AuthResponse(token, user.getName(), user.getEmail(), user.getRole().name());
     }
 
+    private boolean isAnonymous(Authentication authentication) {
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return true;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ANONYMOUS".equals(authority.getAuthority()));
+    }
+
     private boolean isOwner(Authentication authentication) {
-        if (authentication == null) {
+        if (authentication == null || authentication.getPrincipal() == null) {
             return false;
         }
         return authentication.getAuthorities().stream()

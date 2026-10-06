@@ -41,6 +41,10 @@ public class Purchase {
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseItem> items = new ArrayList<>();
 
+    // Shop this purchase belongs to (owner's user id)
+    @Column(name = "owner_id")
+    private Long ownerId;
+
     public Purchase() {
     }
 
@@ -90,5 +94,13 @@ public class Purchase {
 
     public void setItems(List<PurchaseItem> items) {
         this.items = items;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 }

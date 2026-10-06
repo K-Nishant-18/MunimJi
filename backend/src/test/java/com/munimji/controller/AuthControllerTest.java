@@ -53,12 +53,52 @@ class AuthControllerTest {
     }
 
     @Test
-    void register_withoutToken_whenUsersExist_returns403() throws Exception {
+    void register_withoutToken_asOwner_returns201() throws Exception {
+        mvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(Map.of(
+                                "name", "New Shop", "email", "newshop@test.local",
+                                "password", "secret123", "role", "OWNER"))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.role").value("OWNER"));
+    }
+
+    @Test
+    void register_withoutToken_asStaff_returns403() throws Exception {
         mvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(Map.of(
                                 "name", "No Token", "email", "notoken@test.local",
-                                "password", "secret123"))))
+                                "password", "secret123", "role", "STAFF"))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Register as an owner to start a new shop"));
+    }
+
+    @Test
+    void register_withOwnerToken_asOwner_returns403() throws Exception {
+        String ownerToken = login("owner@munimji.local", "owner123");
+
+        mvc.perform(post("/api/auth/register")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(Map.of(
+                                "name", "Second Owner", "email", "secondowner@test.local",
+                                "password", "secret123", "role", "OWNER"))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("An owner can only add staff users"));
+    }
+
+    @Test
+    void register_withStaffToken_returns403() throws Exception {
+        String staffToken = login("staff@munimji.local", "staff123");
+
+        mvc.perform(post("/api/auth/register")
+                        .header("Authorization", "Bearer " + staffToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(Map.of(
+                                "name", "Staff Try", "email", "stafftry@test.local",
+                                "password", "secret123", "role", "STAFF"))))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Only the owner can create new users"));
     }

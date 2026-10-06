@@ -12,20 +12,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // JOIN FETCH loads the category in the same query so the list page does
     // not fire one extra query per product (N+1 problem).
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN FETCH p.category "
-            + "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) "
-            + "OR p.barcode LIKE CONCAT('%', :search, '%')",
+            + "WHERE p.ownerId = :ownerId AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) "
+            + "OR p.barcode LIKE CONCAT('%', :search, '%'))",
             countQuery = "SELECT COUNT(p) FROM Product p "
-                    + "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) "
-                    + "OR p.barcode LIKE CONCAT('%', :search, '%')")
-    Page<Product> search(@Param("search") String search, Pageable pageable);
+                    + "WHERE p.ownerId = :ownerId AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) "
+                    + "OR p.barcode LIKE CONCAT('%', :search, '%'))")
+    Page<Product> search(@Param("ownerId") Long ownerId, @Param("search") String search,
+                         Pageable pageable);
 
     // Loads every product with its batches and category in one query (stock page)
-    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.batches LEFT JOIN FETCH p.category")
-    java.util.List<Product> findAllWithBatches();
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.batches LEFT JOIN FETCH p.category "
+            + "WHERE p.ownerId = :ownerId")
+    java.util.List<Product> findAllWithBatches(@Param("ownerId") Long ownerId);
 
-    boolean existsByCategoryId(Long categoryId);
+    boolean existsByOwnerIdAndCategoryId(Long ownerId, Long categoryId);
 
-    boolean existsByBarcode(String barcode);
+    boolean existsByOwnerIdAndBarcode(Long ownerId, String barcode);
 
-    boolean existsByBarcodeAndIdNot(String barcode, Long id);
+    boolean existsByOwnerIdAndBarcodeAndIdNot(Long ownerId, String barcode, Long id);
+
+    long countByOwnerId(Long ownerId);
 }

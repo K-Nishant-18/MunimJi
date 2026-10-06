@@ -8,6 +8,7 @@ import com.munimji.entity.StockBatch;
 import com.munimji.exception.BadRequestException;
 import com.munimji.repository.ProductRepository;
 import com.munimji.repository.StockBatchRepository;
+import com.munimji.security.CurrentTenant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class StockService {
         List<StockViewResponse> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        for (Product product : productRepository.findAllWithBatches()) {
+        for (Product product : productRepository.findAllWithBatches(CurrentTenant.id())) {
             int total = 0;
             List<StockViewResponse.BatchResponse> batches = new ArrayList<>();
 
@@ -78,7 +79,7 @@ public class StockService {
         LocalDate until = today.plusDays(days);
 
         List<ExpiryAlertResponse> result = new ArrayList<>();
-        for (StockBatch batch : stockBatchRepository.findExpiring(today, until)) {
+        for (StockBatch batch : stockBatchRepository.findExpiring(CurrentTenant.id(), today, until)) {
             long daysLeft = ChronoUnit.DAYS.between(today, batch.getExpiryDate());
             result.add(toExpiryResponse(batch, daysLeft));
         }
@@ -90,7 +91,7 @@ public class StockService {
     public List<ExpiryAlertResponse> expired() {
         LocalDate today = LocalDate.now();
         List<ExpiryAlertResponse> result = new ArrayList<>();
-        for (StockBatch batch : stockBatchRepository.findExpired(today)) {
+        for (StockBatch batch : stockBatchRepository.findExpired(CurrentTenant.id(), today)) {
             long daysLeft = ChronoUnit.DAYS.between(today, batch.getExpiryDate());
             result.add(toExpiryResponse(batch, daysLeft));
         }

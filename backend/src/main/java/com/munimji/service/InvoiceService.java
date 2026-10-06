@@ -16,6 +16,7 @@ import com.munimji.exception.ResourceNotFoundException;
 import com.munimji.repository.InvoiceRepository;
 import com.munimji.repository.ProductRepository;
 import com.munimji.repository.StockBatchRepository;
+import com.munimji.security.CurrentTenant;
 import com.munimji.util.MoneyUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -52,6 +53,7 @@ public class InvoiceService {
      */
     @Transactional
     public InvoiceResponse create(InvoiceRequest request) {
+        Long ownerId = CurrentTenant.id();
         LocalDate today = LocalDate.now();
         BigDecimal discount = request.getDiscount() == null ? MoneyUtil.zero()
                 : MoneyUtil.round(request.getDiscount());
@@ -69,6 +71,10 @@ public class InvoiceService {
             Product product = productRepository.findById(itemRequest.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Product not found with id " + itemRequest.getProductId()));
+            if (!ownerId.equals(product.getOwnerId())) {
+                throw new ResourceNotFoundException(
+                        "Product not found with id " + itemRequest.getProductId());
+            }
             BigDecimal gross = MoneyUtil.round(
                     product.getSellingPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity())));
 
@@ -131,7 +137,8 @@ public class InvoiceService {
         for (int i = 0; i < products.size(); i++) {
             Product product = products.get(i);
             int needed = quantities.get(i);
-            List<StockBatch> sellable = stockBatchRepository.findSellableByProduct(product.getId(), today);
+            List<StockBatch> sellable = stockBatchRepository.findSellableByProduct(product.getId(),
+                    ownerId, today);
 
             int available = 0;
             for (StockBatch batch : sellable) {
@@ -159,7 +166,8 @@ public class InvoiceService {
 
         // Everything is valid, now build and save the invoice
         Invoice invoice = new Invoice();
-        invoice.setInvoiceNumber(nextInvoiceNumber());
+        invoice.setOwnerId(ownerId);
+        invoice.setInvoiceNumber(nextInvoiceNumber(ownerId));
         invoice.setInvoiceDate(LocalDateTime.now());
         invoice.setCustomerName(blankToNull(request.getCustomerName()));
         invoice.setCustomerPhone(blankToNull(request.getCustomerPhone()));
@@ -198,7 +206,7 @@ public class InvoiceService {
 
     @Transactional(readOnly = true)
     public PagedResponse<InvoiceSummaryResponse> findAll(int page, int size) {
-        Page<InvoiceSummaryResponse> result = invoiceRepository.findAllSummaries(
+        Page<InvoiceSummaryResponse> result = invoiceRepository.findAllSummaries(CurrentTenant.id(),
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
 
         return new PagedResponse<>(result.getContent(), result.getNumber(), result.getSize(),
@@ -207,19 +215,19 @@ public class InvoiceService {
 
     @Transactional(readOnly = true)
     public InvoiceResponse findById(Long id) {
-        Invoice invoice = invoiceRepository.findByIdWithItems(id)
+        Invoice invoice = invoiceRepository.findByIdWithItems(id, CurrentTenant.id())
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id " + id));
         return toResponse(invoice);
     }
 
     /**
-     * INV-YYYY-NNNN, sequence restarts every year and continues from the last
-     * invoice of the current year.
+     * INV-YYYY-NNNN per shop, sequence restarts every year and continues from
+     * the last invoice of this shop (each shop counts its own invoices).
      */
-    private String nextInvoiceNumber() {
+    private String nextInvoiceNumber(Long ownerId) {
         int year = LocalDate.now().getYear();
         int next = 1;
-        Optional<Invoice> last = invoiceRepository.findTopByOrderByIdDesc();
+        Optional<Invoice> last = invoiceRepository.findTopByOwnerIdOrderByIdDesc(ownerId);
         if (last.isPresent()) {
             String[] parts = last.get().getInvoiceNumber().split("-");
             if (parts.length == 3 && parts[1].equals(String.valueOf(year))) {

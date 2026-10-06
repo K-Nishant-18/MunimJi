@@ -31,6 +31,11 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    // Shop this user belongs to: null for an OWNER (their shop id IS their own
+    // user id), the owner's user id for every STAFF account.
+    @Column(name = "owner_id")
+    private Long ownerId;
+
     public User() {
     }
 
@@ -79,5 +84,13 @@ public class User {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 }

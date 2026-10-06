@@ -14,6 +14,7 @@ import com.munimji.repository.ProductRepository;
 import com.munimji.repository.PurchaseRepository;
 import com.munimji.repository.StockBatchRepository;
 import com.munimji.repository.SupplierRepository;
+import com.munimji.security.CurrentTenant;
 import com.munimji.util.MoneyUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,11 +49,11 @@ public class PurchaseService {
      */
     @Transactional
     public PurchaseResponse create(PurchaseRequest request) {
-        Supplier supplier = supplierRepository.findById(request.getSupplierId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Supplier not found with id " + request.getSupplierId()));
+        Long ownerId = CurrentTenant.id();
+        Supplier supplier = findSupplier(ownerId, request.getSupplierId());
 
         Purchase purchase = new Purchase();
+        purchase.setOwnerId(ownerId);
         purchase.setSupplier(supplier);
         purchase.setSupplierBillNo(blankToNull(request.getSupplierBillNo()));
         purchase.setPurchaseDate(request.getPurchaseDate() != null ? request.getPurchaseDate() : LocalDate.now());
@@ -61,9 +62,7 @@ public class PurchaseService {
         List<PurchaseItemResponse> itemResponses = new ArrayList<>();
 
         for (PurchaseItemRequest itemRequest : request.getItems()) {
-            Product product = productRepository.findById(itemRequest.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Product not found with id " + itemRequest.getProductId()));
+            Product product = findProduct(ownerId, itemRequest.getProductId());
 
             PurchaseItem item = new PurchaseItem();
             item.setPurchase(purchase);
@@ -95,10 +94,28 @@ public class PurchaseService {
     @Transactional(readOnly = true)
     public List<PurchaseResponse> findAll() {
         List<PurchaseResponse> result = new ArrayList<>();
-        for (Purchase purchase : purchaseRepository.findAllWithDetails()) {
+        for (Purchase purchase : purchaseRepository.findAllWithDetails(CurrentTenant.id())) {
             result.add(toResponse(purchase));
         }
         return result;
+    }
+
+    private Supplier findSupplier(Long ownerId, Long id) {
+        Supplier supplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with id " + id));
+        if (!ownerId.equals(supplier.getOwnerId())) {
+            throw new ResourceNotFoundException("Supplier not found with id " + id);
+        }
+        return supplier;
+    }
+
+    private Product findProduct(Long ownerId, Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id " + id));
+        if (!ownerId.equals(product.getOwnerId())) {
+            throw new ResourceNotFoundException("Product not found with id " + id);
+        }
+        return product;
     }
 
     private PurchaseResponse toResponse(Purchase purchase) {
