@@ -4,7 +4,7 @@ export function BrandTile({ size = 36 }) {
     <img
       src="/MunimJi-logo.png"
       alt="MunimJi"
-      width={size * 2}
+      width={size * 4}
       height={size}
       draggable={false}
       className="block select-none"
